@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  This template creates an IAM role with the minimum access policy to configure
+  Splunk Cloud access to scrape CloudWatch metrics.
+Parameters:
+  AccountID:
+    Type: String
+    Default: 'arn:aws:iam::562691491210:root'
+    Description: >-
+      This is Grafana Lab's AWS account ID and is used to allow Grafana Cloud
+      access to your AWS metrics.
+  ExternalID:
+    Type: String
+    Default: mfefqccknrvhcrnbphts
+    Description: This is the Splunk Cloud identifier and is used security purposes.
+    ConstraintDescription: ExternalID is required.
+  IAMRoleName:
+    Type: String
+    Default: SplunkCloudWatchExporter
+    Description: >-
+      Customize the name of the IAM role used by Splunk for the CloudWatch
+      exporter.
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Splunk Cloud Account
+        Parameters:
+          - AccountID
+          - ExternalID
+      - Label:
+          default: New Role
+        Parameters:
+          - IAMRoleName
+    ParameterLabels:
+      IAMRoleName:
+        default: Role name
+  SplunkCloud:
+    TemplateVersion: 0.0.1
+Resources:
+  SplunkCloudCloudWatchExporterIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref IAMRoleName
+      Description: Role used by Splunk Cloud CloudWatch exporter.
+      Policies:
+        - PolicyName: SplunkCloudCloudWatchExporterIAMRole
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - "apigateway:GET"
+                - "autoscaling:DescribeAutoScalingGroups"
+                - "cloudfront:GetDistributionConfig"
+                - "cloudfront:ListDistributions"
+                - "cloudfront:ListTagsForResource"
+                - "cloudwatch:DescribeAlarms"
+                - "cloudwatch:GetMetricData"
+                - "cloudwatch:GetMetricStatistics"
+                - "cloudwatch:ListMetrics"
+                - "dynamodb:DescribeTable"
+                - "dynamodb:ListTables"
+                - "dynamodb:ListTagsOfResource"
+                - "ec2:DescribeInstances"
+                - "ec2:DescribeInstanceStatus"
+                - "ec2:DescribeRegions"
+                - "ec2:DescribeReservedInstances"
+                - "ec2:DescribeReservedInstancesModifications"
+                - "ec2:DescribeTags"
+                - "ec2:DescribeVolumes"
+                - "ecs:DescribeClusters"
+                - "ecs:DescribeServices"
+                - "ecs:DescribeTasks"
+                - "ecs:ListClusters"
+                - "ecs:ListServices"
+                - "ecs:ListTagsForResource"
+                - "ecs:ListTaskDefinitions"
+                - "ecs:ListTasks"
+                - "elasticache:DescribeCacheClusters"
+                - "elasticloadbalancing:DescribeLoadBalancerAttributes"
+                - "elasticloadbalancing:DescribeLoadBalancers"
+                - "elasticloadbalancing:DescribeTags"
+                - "elasticloadbalancing:DescribeTargetGroups"
+                - "elasticmapreduce:DescribeCluster"
+                - "elasticmapreduce:ListClusters"
+                - "es:DescribeElasticsearchDomain"
+                - "es:ListDomainNames"
+                - "kinesis:DescribeStream"
+                - "kinesis:ListShards"
+                - "kinesis:ListStreams"
+                - "kinesis:ListTagsForStream"
+                - "lambda:GetAlias"
+                - "lambda:ListFunctions"
+                - "lambda:ListTags"
+                - "logs:DeleteSubscriptionFilter"
+                - "logs:DescribeLogGroups"
+                - "logs:DescribeSubscriptionFilters"
+                - "logs:PutSubscriptionFilter"
+                - "organizations:DescribeOrganization"
+                - "rds:DescribeDBInstances"
+                - "rds:ListTagsForResource"
+                - "redshift:DescribeClusters"
+                - "redshift:DescribeLoggingStatus"
+                - "s3:GetBucketLocation"
+                - "s3:GetBucketLogging"
+                - "s3:GetBucketNotification"
+                - "s3:GetBucketTagging"
+                - "s3:ListAllMyBuckets"
+                - "s3:ListBucket"
+                - "s3:PutBucketNotification"
+                - "sqs:GetQueueAttributes"
+                - "sqs:ListQueues"
+                - "sqs:ListQueueTags"
+                - "tag:GetResources"
+                Effect: Allow
+                Resource: '*'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AccountID
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'sts:ExternalId': !Ref ExternalID
+Outputs:
+  RoleARN:
+    Description: 'The ARN for the role created, copy this into Splunk Cloud installation.'
+    Value: !GetAtt 
+      - SplunkCloudCloudWatchExporterIAMRole
+      - Arn
