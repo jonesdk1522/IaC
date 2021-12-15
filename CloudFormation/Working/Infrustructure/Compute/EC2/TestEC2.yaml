@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  Test CFN template for NMCC SSM Integration. EC2 will be a generic Amazon-Linux type.
+  Test CFN template for NMCC SSM Integration. EC2 will be a generic Amazon-Linux type
 Mappings:
   RegionMap:
     us-east-1:
