@@ -1,0 +1,393 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Cloudformation to deploy lambda function for cloudwatch alarms for CPU Utilization metric
+Parameters:
+  EmailAddress: 
+    Type: String
+    Description: Provide an email address or distribution list to associate with the SNS topic
+    Default: kevin.d.jones.jr@gmail.com
+Mappings:
+  S3BucketMap:
+    'us-east-1':
+      S3BucketName: public-customer-cloudwatch
+    'us-west-2':
+      S3BucketName: public-customer-cloudwatch-oregon
+Resources:
+  CreateCloudWatchAlarmForInstances:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Lambda funtion used to provision cloudwatch alarms for EC2 instance CPU Utilization
+      Handler: lambda_cloudwatch_alarms.lambda_handler
+      FunctionName: CreateCloudWatchAlarmEC2Instances
+      Role: !GetAtt 
+            - LambdaRoleForCloudwatch
+            - Arn
+      Code:
+        S3Bucket: !FindInMap [ S3BucketMap, !Ref "AWS::Region", S3BucketName ]
+        S3Key: "lambda_cloudwatch_alarms.zip"
+      Runtime: "python3.6"
+      Timeout: "870"
+      MemorySize: 1024
+      Environment:
+        Variables: 
+          Email : !Ref EmailAddress
+
+  TerminateCloudWatchAlarmsForInstances:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: "Lambda funtion used to provision cloudwatch alarms for EC2 instance CPU Utilization"
+      Handler: "terminate_cloudwatch_alarms.lambda_handler"
+      FunctionName: "TerminateCloudWatchAlarmsForEc2Instances"
+      Role: !GetAtt 
+            - LambdaRoleForCloudwatch
+            - Arn
+      Code:
+        S3Bucket: !FindInMap [ S3BucketMap, !Ref "AWS::Region", S3BucketName ]
+        S3Key: "terminate_cloudwatch_alarms.zip"
+      Runtime: "python3.6"
+      Timeout: "600"
+      MemorySize: 1024
+  CreateAlarmsEventRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "EventRule for creating alarms everytime an instance is created"
+      EventPattern: 
+        source: 
+          - "aws.ec2"
+        detail-type: 
+          - "EC2 Instance State-change Notification"
+        detail: 
+          state: 
+            - "running"
+            - "pending"
+      State: "ENABLED"
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - "CreateCloudWatchAlarmForInstances"
+              - "Arn"
+          Id: "CreateCloudWatchAlarmForInstances"
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "CreateCloudWatchAlarmForInstances"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "CreateCloudWatchAlarmForInstances"
+          - "Arn"
+
+  TerminateAlarmsEventRule: 
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: "EventRule for delete alarms everytime an instance is terminated"
+      EventPattern: 
+        source: 
+          - "aws.ec2"
+        detail-type: 
+          - "EC2 Instance State-change Notification"
+        detail: 
+          state: 
+            - "terminated"
+      State: "ENABLED"
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - "TerminateCloudWatchAlarmsForInstances"
+              - "Arn"
+          Id: "TerminateCloudWatchAlarmsForInstances"
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "TerminateCloudWatchAlarmsForInstances"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "TerminateCloudWatchAlarmsForInstances"
+          - "Arn"
+  LambdaRoleForCloudwatch:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - 'arn:aws:iam::aws:policy/AmazonSSMFullAccess'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: CloudwatchLambdaPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cloudwatch:*'
+                  - 'ec2:*'
+                  - 'sns:*'
+                  - 'ssm:*'
+                Resource: '*'
+
+########### SSM Parameters for Windows and Linux Cloudwatch configuration #############
+
+  LinuxSSMParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: AmazonCloudWatch-linux
+      Type: String
+      Tier: Advanced
+      Description: Default cloudwatch configuration for linux.
+      Value: '{ "agent": {
+                          "metrics_collection_interval": 10,
+                          "run_as_user": "root"
+                   },
+                "logs": {
+                          "logs_collected": {
+                                 "files": {
+                                       "collect_list": [
+                                              {
+                                                     "file_path": "/opt/amazon/bin/logs/auth.log",
+                                                     "log_group_name": "auth.log",
+                                                     "log_stream_name": "{instance_id}"
+                                              },
+                                              {
+                                                     "file_path": "/opt/amazon/bin/Application/log",
+                                                     "log_group_name": "application",
+                                                     "log_stream_name": "{instance_id}"
+                                              },
+                                              {
+                                                     "file_path": "var/log/system",
+                                                     "log_group_name": "system",
+                                                     "log_stream_name": "{instance_id}"
+                                              },
+                                              {
+                                                     "file_path": "var/log/auth",
+                                                     "log_group_name": "auth",
+                                                     "log_stream_name": "{instance_id}"
+                                              },
+                                              {
+                                                     "file_path": "var/log/secure",
+                                                     "log_group_name": "secure",
+                                                     "log_stream_name": "{instance_id}"
+                                              }
+                                       ]
+                                 }
+                          }
+                   },
+                   "metrics": {
+                          "append_dimensions": {
+                                 "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+                                 "ImageId": "${aws:ImageId}",
+                                 "InstanceId": "${aws:InstanceId}",
+                                 "InstanceType": "${aws:InstanceType}"
+                          },
+                          "metrics_collected": {
+                                 "collectd": {
+                                       "metrics_aggregation_interval": 30
+                                 },
+                                 "cpu": {
+                                       "measurement": [
+                                              "cpu_usage_idle",
+                                              "cpu_usage_iowait",
+                                              "cpu_usage_user",
+                                              "cpu_usage_system"
+                                       ],
+                                       "metrics_collection_interval": 10,
+                                       "resources": [
+                                              "*"
+                                       ],
+                                       "totalcpu": false
+                                 },
+                                 "disk": {
+                                       "measurement": [
+                                              "used_percent",
+                                              "inodes_free"
+                                       ],
+                                       "metrics_collection_interval": 10,
+                                       "resources": [
+                                              "*"
+                                       ]
+                                 },
+                                 "diskio": {
+                                       "measurement": [
+                                              "io_time",
+                                              "write_bytes",
+                                              "read_bytes",
+                                              "writes",
+                                              "reads"
+                                       ],
+                                       "metrics_collection_interval": 10,
+                                       "resources": [
+                                              "*"
+                                       ]
+                                 },
+                                 "mem": {
+                                       "measurement": [
+                                              "mem_used_percent"
+                                       ],
+                                       "metrics_collection_interval": 10
+                                 },
+                                 "netstat": {
+                                       "measurement": [
+                                              "tcp_established",
+                                              "tcp_time_wait"
+                                       ],
+                                       "metrics_collection_interval": 10
+                                 },
+                                 "statsd": {
+                                       "metrics_aggregation_interval": 30,
+                                       "metrics_collection_interval": 10,
+                                       "service_address": ":8125"
+                                 },
+                                 "swap": {
+                                       "measurement": [
+                                              "swap_used_percent"
+                                       ],
+                                       "metrics_collection_interval": 10
+                                 }
+                          }
+                   }
+            }'
+
+  WindowsSSMParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: AmazonCloudWatch-windows
+      Type: String
+      Tier: Advanced
+      Description: default cloudwatch setup configuration file for windows.
+      Value: '{
+              "logs": {
+                "logs_collected": {
+                  "windows_events": {
+                    "collect_list": [
+                      {
+                        "event_format": "xml",
+                        "event_levels": [
+                          "VERBOSE",
+                          "INFORMATION",
+                          "WARNING",
+                          "ERROR",
+                          "CRITICAL"
+                        ],
+                        "event_name": "System",
+                        "log_group_name": "System",
+                        "log_stream_name": "{instance_id}"
+                      },
+                      {
+                        "event_format": "xml",
+                        "event_levels": [
+                          "VERBOSE",
+                          "INFORMATION",
+                          "WARNING",
+                          "ERROR",
+                          "CRITICAL"
+                        ],
+                        "event_name": "Application",
+                        "log_group_name": "Application",
+                        "log_stream_name": "{instance_id}"
+                      },
+                      {
+                        "event_format": "xml",
+                        "event_levels": [
+                          "VERBOSE",
+                          "INFORMATION",
+                          "WARNING",
+                          "ERROR",
+                          "CRITICAL"
+                        ],
+                        "event_name": "Security",
+                        "log_group_name": "Security",
+                        "log_stream_name": "{instance_id}"
+                      }
+                    ]
+                  }
+                }
+              },
+              "metrics": {
+                "append_dimensions": {
+                  "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+                  "ImageId": "${aws:ImageId}",
+                  "InstanceId": "${aws:InstanceId}",
+                  "InstanceType": "${aws:InstanceType}"
+                },
+                "metrics_collected": {
+                  "LogicalDisk": {
+                    "measurement": [
+                      "% Free Space"
+                    ],
+                    "metrics_collection_interval": 30,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "Memory": {
+                    "measurement": [
+                      "% Committed Bytes In Use"
+                    ],
+                    "metrics_collection_interval": 30
+                  },
+                  "Paging File": {
+                    "measurement": [
+                      "% Usage"
+                    ],
+                    "metrics_collection_interval": 30,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "PhysicalDisk": {
+                    "measurement": [
+                      "% Disk Time",
+                      "Disk Write Bytes/sec",
+                      "Disk Read Bytes/sec",
+                      "Disk Writes/sec",
+                      "Disk Reads/sec"
+                    ],
+                    "metrics_collection_interval": 30,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "Processor": {
+                    "measurement": [
+                      "% User Time",
+                      "% Idle Time",
+                      "% Interrupt Time"
+                    ],
+                    "metrics_collection_interval": 30,
+                    "resources": [
+                      "*"
+                    ]
+                  },
+                  "TCPv4": {
+                    "measurement": [
+                      "Connections Established"
+                    ],
+                    "metrics_collection_interval": 30
+                  },
+                  "TCPv6": {
+                    "measurement": [
+                      "Connections Established"
+                    ],
+                    "metrics_collection_interval": 30
+                  },
+                  "statsd": {
+                    "metrics_aggregation_interval": 30,
+                    "metrics_collection_interval": 30,
+                    "service_address": ":8125"
+                  }
+                }
+              }
+            }'

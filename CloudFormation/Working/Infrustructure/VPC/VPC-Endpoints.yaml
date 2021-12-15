@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Resources:
+  SgForssmVPCEndpoint:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Security group to allow access to ssm VPC Endpoint"
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          IpProtocol: "-1"
+      VpcId: "vpc-054222ee29a151236"
+  ssmVPCEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcEndpointType: "Interface"
+      ServiceName:
+        Fn::Join:
+          - ""
+          -
+            - "com.amazonaws."
+            - Ref: "AWS::Region"
+            - ".ssm"
+      VpcId: "vpc-054222ee29a151236"
+      SubnetIds:
+        - "subnet-07c9c5d58e75c42aa"
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - Ref: "SgForssmVPCEndpoint"
+  sVPCEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      ServiceName:
+        Fn::Join:
+          - ""
+          -
+            - "com.amazonaws."
+            - Ref: "AWS::Region"
+            - ".s3"
+      VpcId: "vpc-054222ee29a151236"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action:
+              - "*"
+            Resource:
+              - "*"
+      RouteTableIds:
+        - "rtb-0414ed029b9e5ad6a"
+        - "rtb-0570743bd06655d70"

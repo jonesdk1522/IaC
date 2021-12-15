@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Test CFN template for NMCC SSM Integration. EC2 will be a generic Amazon-Linux type.
+Mappings:
+  RegionMap:
+    us-east-1:
+      ImageID: ami-061ac2e015473fbe2
+    us-east-2:
+      ImageID: ami-002068ed284fb165b
+    us-west-1:
+      ImageID: ami-03af6a70ccd8cb578
+    us-west-2:
+      ImageID: ami-00f7e5c52c0f43726
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Test EC2 Instance Configuration
+        Parameters:
+          - InstanceType
+          - KeyPair
+      - Label:
+          default: Test EC2 Network Configuration
+        Parameters:
+          - Subnet
+          - SecurityGroupIds
+      - Label:
+          default: Test EC2 Security Group Configuration
+    ParameterLabels:
+      InstanceType:
+        default: Instance Type
+      KeyPair:
+        default: Key Pair
+      Subnet:
+        default: Subnet group
+      SecurityGroupIds:
+        default: Select Security group
+Parameters:
+  InstanceType:
+    AllowedValues:
+      - t2.micro
+    ConstraintDescription: must be a valid EC2 instance type.
+    Default: t2.micro
+    Description: Test EC2 instance type
+    Type: String
+  KeyPair:
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Description: >-
+      Name of an existing EC2 Key Pair to enable SSH access to the Test EC2
+      instances
+    Type: 'AWS::EC2::KeyPair::KeyName'
+  Subnet:
+    ConstraintDescription: must be an existing public subnet in the selected Virtual Private Cloud.
+    Description: >-
+      The Public subnet in VPC to deploy the Test EC2 Instance must have
+      Auto-assign Public IP
+    Type: 'AWS::EC2::Subnet::Id'
+  SecurityGroupIds:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: >-
+      Security Group of the Test EC2 instances.
+Resources:
+#Test EC2 configuration
+  TestEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !FindInMap
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - ImageID
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: AWSEC2DefaultRole-RootInstanceProfile-9OFR796W96UP
+      KeyName: !Ref KeyPair
+      SecurityGroupIds:
+        - !Ref SecurityGroupIds
+      SubnetId: !Ref Subnet
+      Tags:
+        - Key: Name
+          Value: Test EC2
+        - Key: System
+          Value: Automation
+        - Key: Environment
+          Value: Dev
+        - Key: Role
+          Value: Test
+        - Key: Team
+          Value: Compliance
