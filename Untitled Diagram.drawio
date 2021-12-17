@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-12-17T05:49:22.173Z" agent="5.0 (Macintosh)" etag="hTt3M0DQK0wgmiR_JEgt" version="15.9.6" type="github">
+<mxfile host="app.diagrams.net" modified="2021-12-17T05:55:23.789Z" agent="5.0 (Macintosh)" etag="sSaJz_MihzTGI5OTzlqj" version="15.9.6" type="github">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Page-1">
-    <mxGraphModel dx="1664" dy="865" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2583" dy="1359" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -626,7 +626,7 @@
           <mxGeometry x="262" y="797.18" width="18" height="18" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-231" value="Infrastructure as Code - DevSecOps" style="swimlane;childLayout=stackLayout;horizontal=1;fillColor=none;horizontalStack=1;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;strokeColor=none;stackBorder=10;stackSpacing=-12;resizable=1;align=center;points=[];fontColor=#000000;rounded=0;labelBackgroundColor=none;fontSize=10;comic=0;glass=0;swimlaneLine=1;noLabel=0;movableLabel=1;labelPadding=5;" vertex="1" parent="1">
-          <mxGeometry x="126" y="1190" width="770" height="100" as="geometry" />
+          <mxGeometry x="126" y="1190" width="1111" height="100" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-232" value="IDE" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#6c8ebf;strokeWidth=2;fillColor=#dae8fc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
           <mxGeometry x="10" y="33" width="70" height="57" as="geometry" />
@@ -634,17 +634,23 @@
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-233" value="Checkov compliance checks" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d79b00;strokeWidth=2;fillColor=#ffe6cc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
           <mxGeometry x="68" y="33" width="182" height="57" as="geometry" />
         </mxCell>
-        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-234" value="Talisman" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d79b00;strokeWidth=2;fillColor=#ffe6cc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
-          <mxGeometry x="238" y="33" width="92" height="57" as="geometry" />
+        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-237" value="Linter" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d6b656;strokeWidth=2;fillColor=#fff2cc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
+          <mxGeometry x="238" y="33" width="127" height="57" as="geometry" />
+        </mxCell>
+        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-234" value="Talisman secrets check" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d79b00;strokeWidth=2;fillColor=#ffe6cc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
+          <mxGeometry x="353" y="33" width="158" height="57" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-235" value="Repo compliance scanners" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d79b00;strokeWidth=2;fillColor=#ffe6cc;comic=0;noLabel=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
-          <mxGeometry x="318" y="33" width="172" height="57" as="geometry" />
+          <mxGeometry x="499" y="33" width="172" height="57" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-236" value="AWS compliance checks per account" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#d79b00;strokeWidth=2;fillColor=#ffe6cc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
-          <mxGeometry x="478" y="33" width="212" height="57" as="geometry" />
+          <mxGeometry x="659" y="33" width="212" height="57" as="geometry" />
         </mxCell>
-        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-237" value="Go live" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#82b366;strokeWidth=2;fillColor=#d5e8d4;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
-          <mxGeometry x="678" y="33" width="82" height="57" as="geometry" />
+        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-318" value="Run/test build" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#6c8ebf;strokeWidth=2;fillColor=#dae8fc;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
+          <mxGeometry x="859" y="33" width="127" height="57" as="geometry" />
+        </mxCell>
+        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-319" value="Push to pre-prod" style="shape=step;perimeter=stepPerimeter;fixedSize=1;points=[];rounded=0;labelBackgroundColor=none;fontSize=10;strokeColor=#82b366;strokeWidth=2;fillColor=#d5e8d4;comic=0;" vertex="1" parent="RZ0_6Ih5bEzpeEGCjAap-231">
+          <mxGeometry x="974" y="33" width="127" height="57" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-252" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;fontColor=none;startArrow=none;startFill=0;endArrow=block;endFill=1;endSize=6;targetPerimeterSpacing=0;strokeColor=#FF3333;strokeWidth=1;elbow=vertical;dashed=1;comic=0;" edge="1" parent="1" source="RZ0_6Ih5bEzpeEGCjAap-254" target="RZ0_6Ih5bEzpeEGCjAap-226">
           <mxGeometry relative="1" as="geometry" />
