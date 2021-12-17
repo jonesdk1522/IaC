@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-12-17T01:39:50.454Z" agent="5.0 (Macintosh)" etag="hRHbheT853mKQaDOwq70" version="15.9.6" type="github">
+<mxfile host="app.diagrams.net" modified="2021-12-17T01:57:31.754Z" agent="5.0 (Macintosh)" etag="ymFoosVpRDeLTEMX-0-1" version="15.9.6" type="github">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Page-1">
     <mxGraphModel dx="2289" dy="1211" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -431,12 +431,6 @@
           <mxGeometry width="100" relative="1" as="geometry">
             <mxPoint x="1117" y="264.25" as="sourcePoint" />
             <mxPoint x="1217" y="264.25" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-175" value="" style="shape=flexArrow;endArrow=classic;html=1;fontSize=10;fontColor=none;endSize=6;targetPerimeterSpacing=0;strokeColor=#232F3E;strokeWidth=10;elbow=vertical;" edge="1" parent="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="960" y="340" as="sourcePoint" />
-            <mxPoint x="1010" y="290" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
