@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-12-17T14:37:03.084Z" agent="5.0 (Macintosh)" etag="eMvl4dmQcsVc7dLtiEC6" version="15.9.6" type="github">
+<mxfile host="app.diagrams.net" modified="2021-12-17T14:40:05.212Z" agent="5.0 (Macintosh)" etag="2-uv_Vp7_cq0i6De5Icq" version="15.9.6" type="github">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Page-1">
-    <mxGraphModel dx="2478" dy="1302" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2837" dy="1496" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -831,6 +831,12 @@
         </mxCell>
         <mxCell id="2bhmxZHPRwG87x4gsSGM-19" value="" style="sketch=0;outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.mfa_token;shadow=0;comic=0;noLabel=0;backgroundOutline=0;container=0;fillOpacity=100;fillColor=#CC0000;" vertex="1" parent="1">
           <mxGeometry x="1311.69" y="932" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="2bhmxZHPRwG87x4gsSGM-21" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;flipH=1;shadow=0;comic=0;sketch=0;fontSize=7;strokeColor=#232F3E;strokeWidth=2;fillColor=#CC0000;gradientColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1143" y="602" width="24" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="2bhmxZHPRwG87x4gsSGM-22" value="Provisions Sub-accounts" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontSize=10;strokeColor=#82b366;strokeWidth=2;fillColor=#d5e8d4;comic=0;direction=north;horizontal=0;" vertex="1" parent="1">
+          <mxGeometry x="1123" y="650.5" width="20" height="123" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
