@@ -1,9 +1,12 @@
-<mxfile host="app.diagrams.net" modified="2021-12-17T20:20:35.597Z" agent="5.0 (Macintosh)" etag="WAC5zyid0dKRcP4_63d8" version="15.9.6" type="github">
+<mxfile host="app.diagrams.net" modified="2021-12-17T20:23:10.689Z" agent="5.0 (Macintosh)" etag="utjYgA5NvJ_OUi7HUbNV" version="15.9.6" type="github">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Page-1">
     <mxGraphModel dx="2626" dy="1167" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="yWTK7wSygGAMq-4Vs5H4-22" value="" style="rounded=1;whiteSpace=wrap;html=1;shadow=0;sketch=0;strokeColor=#232F3E;strokeWidth=3;fillColor=none;glass=0;" parent="1" vertex="1">
+          <mxGeometry x="964" y="-172.76" width="982" height="219" as="geometry" />
+        </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-296" style="edgeStyle=orthogonalEdgeStyle;comic=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;shadow=0;fontSize=10;fontColor=none;startArrow=none;startFill=0;endArrow=block;endFill=1;endSize=6;targetPerimeterSpacing=0;strokeColor=#FF3333;strokeWidth=1;elbow=vertical;dashed=1;" parent="1" source="RZ0_6Ih5bEzpeEGCjAap-245" target="RZ0_6Ih5bEzpeEGCjAap-70" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="130" y="821.1799999999998" as="targetPoint" />
@@ -518,7 +521,7 @@
             <mxPoint x="1403.5" y="-24.5" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-178" value="&lt;div&gt;NLB SSL/TLS &lt;br&gt;&lt;/div&gt;&lt;div&gt;inspection&lt;/div&gt;&lt;div&gt; and offloading&lt;/div&gt;" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#4D27AA;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.network_load_balancer;rounded=0;comic=0;" parent="1" vertex="1">
+        <mxCell id="RZ0_6Ih5bEzpeEGCjAap-178" value="Load-balance Appliances" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#4D27AA;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.gateway_load_balancer;rounded=0;comic=0;" parent="1" vertex="1">
           <mxGeometry x="1533.5" y="-88.75" width="51" height="51" as="geometry" />
         </mxCell>
         <mxCell id="RZ0_6Ih5bEzpeEGCjAap-181" value="Maps to endpoint" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fontSize=10;strokeColor=#6c8ebf;strokeWidth=2;fillColor=#dae8fc;comic=0;" parent="1" vertex="1">
@@ -912,9 +915,6 @@
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="yWTK7wSygGAMq-4Vs5H4-22" value="" style="rounded=1;whiteSpace=wrap;html=1;shadow=0;sketch=0;strokeColor=#232F3E;strokeWidth=3;fillColor=none;glass=0;" parent="1" vertex="1">
-          <mxGeometry x="964" y="-172.76" width="982" height="219" as="geometry" />
-        </mxCell>
         <mxCell id="yWTK7wSygGAMq-4Vs5H4-31" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;startArrow=none;startFill=0;endArrow=none;endFill=0;strokeWidth=1;jumpStyle=line;" parent="1" source="yWTK7wSygGAMq-4Vs5H4-24" target="RZ0_6Ih5bEzpeEGCjAap-112" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -1105,9 +1105,6 @@
         </mxCell>
         <mxCell id="yWTK7wSygGAMq-4Vs5H4-93" value="" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#3F8624;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.bucket;rounded=0;shadow=0;glass=0;" parent="1" vertex="1">
           <mxGeometry x="47" y="-210.1" width="30" height="31.2" as="geometry" />
-        </mxCell>
-        <mxCell id="o_qxe3INDuo4RFB_LgJy-1" value="Load-balance Appliances" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#4D27AA;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.gateway_load_balancer;rounded=0;comic=0;" vertex="1" parent="1">
-          <mxGeometry x="1597" y="-160" width="40" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
