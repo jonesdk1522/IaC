@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Role For CloudView to fetch resource details.
+Resources:
+  QualysRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: Role_For_Qualys_CV
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              AWS: 'arn:aws:iam::805950163170:root'
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'sts:ExternalId': US4-144359-1646867770137
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/SecurityAudit'
+  CreateQualysCustomPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: >-
+        This policy contains additional permissions for fetching resource
+        details.
+      ManagedPolicyName: QualysReadOnlyPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: QualysReadOnlyPermissions
+            Effect: Allow
+            Action:
+              - 'eks:ListFargateProfiles'
+              - 'eks:DescribeFargateProfile'
+            Resource: '*'
+          - Sid: QualysEFSAndStepFunctionPolicyPermissions
+            Effect: Allow
+            Action:
+              - 'states:DescribeStateMachine'
+              - 'elasticfilesystem:DescribeFileSystemPolicy'
+            Resource: '*'
+          - Sid: QualysAPIGatewayGetPermissions
+            Effect: Allow
+            Action: 'apigateway:GET'
+            Resource: 'arn:aws:apigateway:*::/restapis/*'
+      Roles:
+        - !Ref QualysRole
+Outputs:
+  PolicyArn:
+    Description: Qualys Read Only created ARN
+    Value: !Ref CreateQualysCustomPolicy
+  RoleARN:
+    Description: The ARN of the role that can be assumed by the CloudView AWS Connector.
+    Value: !GetAtt 
+      - QualysRole
+      - Arn

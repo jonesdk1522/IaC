@@ -40,6 +40,21 @@ Resources:
           - "0"
           - Fn::GetAZs:
               Ref: "AWS::Region"
+  FirewallSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      CidrBlock: "10.0.15.0/28"
+      MapPublicIpOnLaunch: true
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Firewall Subnet AZ A"
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs:
+              Ref: "AWS::Region"
   RouteTablePublic:
     Type: "AWS::EC2::RouteTable"
     Properties:
@@ -55,12 +70,27 @@ Resources:
         Ref: "RouteTablePublic"
       SubnetId:
         Ref: "PublicSubnet1"
-  RouteTablePublicRoute0:
+  RouteTablePublicFW:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Public FW Route Table"
+  RouteTablePublicFWAssociation1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId:
+        Ref: "RouteTablePublicFW"
+      SubnetId:
+        Ref: "FirewallSubnet1"
+  RouteTablePublicFWRoute0:
     Type: "AWS::EC2::Route"
     Properties:
       DestinationCidrBlock: "0.0.0.0/0"
       RouteTableId:
-        Ref: "RouteTablePublic"
+        Ref: "RouteTablePublicFW"
       GatewayId:
         Ref: "Igw"
   RouteTablePrivate1:
@@ -94,7 +124,7 @@ Resources:
   SecurityGroup2:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
-      GroupDescription: "Build a custom security group."
+      GroupDescription: "Custom SG to demonstrate complaince errors"
       VpcId:
         Ref: "VPC"
       SecurityGroupEgress:
@@ -114,7 +144,9 @@ Resources:
           IpProtocol: "tcp"
           Description: ""
           CidrIp: "0.0.0.0/0"
-      GroupName: "Demo-SG"
-Parameters: {}
-Metadata: {}
-Conditions: {}
+        - FromPort: 3389
+          ToPort: 3389
+          IpProtocol: "tcp"
+          Description: ""
+          CidrIp: "0.0.0.0/0"
+      GroupName: "Compliance-SGv2"
