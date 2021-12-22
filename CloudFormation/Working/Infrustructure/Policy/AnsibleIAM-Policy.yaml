@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Default role Ansible-dev
+Resources:
+  AnsibleUser:
+    Type: AWS::IAM::User
+    Properties: 
+      Groups:
+        - !Ref ToolsAdminGroup
+      UserName: Ansible-dev
+  ToolsAdminGroup:
+    Type: AWS::IAM::Group
+    Properties: 
+      GroupName: ToolswRW
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AdministratorAccess

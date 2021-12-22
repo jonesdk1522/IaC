@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  This policy is used to integrate with Spacelift IaC
+Parameters:
+  AccountID:
+    Type: String
+    Default: 'arn:aws:iam::324880187172:root'
+    Description: >-
+      Account number for Spacelift AWS
+  ExternalID:
+    Type: String
+    Default: jonesdk1522@test
+    Description: Spacelift external ID
+    ConstraintDescription: ExternalID is required.
+  IAMRoleName:
+    Type: String
+    Default: SpaceliftIAM
+    Description: >-
+      Customize the name of the IAM role used by Spacelift
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Spacelift Cloud Account
+        Parameters:
+          - AccountID
+          - ExternalID
+      - Label:
+          default: New Role
+        Parameters:
+          - IAMRoleName
+    ParameterLabels:
+      IAMRoleName:
+        default: Role name
+Resources:
+  SpaceliftIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref IAMRoleName
+      Description: Role used by Spacelift
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AccountID
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'sts:ExternalId': !Ref ExternalID
+Outputs:
+  RoleARN:
+    Description: 'The ARN for the role created, copy this into Spacelift installation.'
+    Value: !GetAtt 
+      - SpaceliftIAMRole
+      - Arn
