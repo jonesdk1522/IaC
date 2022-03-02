@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2022-03-02T15:26:22.744Z" agent="5.0 (Windows)" etag="gqpSwP3tg57_OSKSDJi8" version="16.6.4" type="github" pages="7">
+<mxfile host="app.diagrams.net" modified="2022-03-02T15:56:58.168Z" agent="5.0 (Windows)" etag="zBrV277H45iBW4firyhO" version="16.6.4" type="github" pages="7">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Demo SaaS App">
     <mxGraphModel dx="1422" dy="744" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4000" pageHeight="2000" math="0" shadow="1">
       <root>
@@ -3229,19 +3229,40 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-2" value="&lt;div&gt;CASB&lt;/div&gt;&lt;div&gt;Cloud Access Security Broker&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="20" y="430" width="110" height="80" as="geometry" />
+          <mxGeometry x="15" y="430" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-3" target="5v4j9pXB-Qu36WGeBWvi-18">
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="875" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-33" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=8;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-3" target="5v4j9pXB-Qu36WGeBWvi-31">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="875" y="560" />
+              <mxPoint x="1020" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-35" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-3" target="5v4j9pXB-Qu36WGeBWvi-34">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-3" value="&lt;div&gt;CNAPP&lt;/div&gt;&lt;div&gt;Cloud Native Application Protection Platoform&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="820" y="430" width="110" height="80" as="geometry" />
+          <mxGeometry x="815" y="430" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-4" target="5v4j9pXB-Qu36WGeBWvi-20">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-41" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-4" target="5v4j9pXB-Qu36WGeBWvi-36">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="460" y="320" />
+              <mxPoint x="730" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-4" value="&lt;div&gt;CIEM&lt;/div&gt;&lt;div&gt;Cloud Infrastructure Entitlement Management&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="405" y="280" width="110" height="80" as="geometry" />
+          <mxGeometry x="401.25" y="200" width="117.5" height="80" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-7">
           <mxGeometry relative="1" as="geometry" />
@@ -3252,8 +3273,32 @@
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-14">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-38" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-37">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="560" />
+              <mxPoint x="460" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-39" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;endArrow=none;endFill=0;jumpStyle=gap;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-36">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="560" />
+              <mxPoint x="730" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-51" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;fontSize=12;endArrow=none;endFill=0;strokeWidth=2;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-49">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="560" />
+              <mxPoint x="190" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-6" value="&lt;div&gt;CSPM&lt;/div&gt;&lt;div&gt;Cloud Security Posture Management&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="260" y="430" width="110" height="80" as="geometry" />
+          <mxGeometry x="255" y="430" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-7" target="5v4j9pXB-Qu36WGeBWvi-3">
           <mxGeometry relative="1" as="geometry" />
@@ -3261,23 +3306,72 @@
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-7" target="5v4j9pXB-Qu36WGeBWvi-16">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-7" value="&lt;div&gt;CWPP&lt;/div&gt;&lt;div&gt;Cloud Workload Protection Platform&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="540" y="430" width="110" height="80" as="geometry" />
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-40" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=12;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-7" target="5v4j9pXB-Qu36WGeBWvi-36">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="595" y="550" />
+              <mxPoint x="730" y="550" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-7" value="&lt;div&gt;CWPP&lt;/div&gt;&lt;div&gt;Cloud Workload Protection Platform&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=middle;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="535" y="430" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="5v4j9pXB-Qu36WGeBWvi-12" value="3rd Party SaaS tools like Slack, Dropbox, O365, etc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
           <mxGeometry x="15" y="640" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-14" value="Cloud Security Posture Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-14" value="Configuration management of cloud infra" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
           <mxGeometry x="255" y="640" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-16" value="Cloud Workload Protection Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-16" value="Security controls for compute services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
           <mxGeometry x="535" y="640" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-18" value="Cloud Native Application Protection Platoform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-20" value="Cloud Infrastructure Entitlement Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="640" y="210" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-31" value="Push left features to support DevSecOps model" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="960" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-32" value="Combines CSPM and CWPP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
           <mxGeometry x="815" y="640" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="5v4j9pXB-Qu36WGeBWvi-20" value="Cloud Infrastructure Entitlement Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
-          <mxGeometry x="400" y="100" width="120" height="60" as="geometry" />
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-34" value="Lacework" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rounded=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="1160" y="440" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-36" value="Orca" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rounded=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="700" y="800" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-42" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jumpStyle=gap;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;endArrow=none;endFill=0;dashed=1;strokeWidth=2;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-37" target="5v4j9pXB-Qu36WGeBWvi-31">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="460" y="920" />
+              <mxPoint x="1020" y="920" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-37" value="Prisma" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rounded=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="430" y="800" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-43" value="Repository Scanning" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="670" y="900" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-44" value="What apps are users accessing?" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="15" y="370" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-45" value="Do I meet compliance?" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="255" y="370" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-46" value="How are my services doing what they are doing?" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="400" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-47" value="What are my services doing?" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="535" y="370" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-49" value="Aviatrix" style="rhombus;whiteSpace=wrap;html=1;rounded=1;fontSize=12;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="150" y="1040" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-52" value="Helps to enforce Network posture" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;fillColor=#ffe6cc;strokeColor=#d79b00;rotation=-90;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="130" y="790" width="120" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
