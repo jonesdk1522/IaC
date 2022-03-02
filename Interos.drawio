@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2022-02-25T23:37:43.327Z" agent="5.0 (Windows)" etag="gh2INsxtP3yY1MzNFRlX" version="16.6.3" type="github" pages="6">
+<mxfile host="app.diagrams.net" modified="2022-03-02T15:26:22.744Z" agent="5.0 (Windows)" etag="gqpSwP3tg57_OSKSDJi8" version="16.6.4" type="github" pages="7">
   <diagram id="KCqNe5kbPb-Tkl5RHsjK" name="Demo SaaS App">
-    <mxGraphModel dx="2062" dy="1132" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4000" pageHeight="2000" math="0" shadow="1">
+    <mxGraphModel dx="1422" dy="744" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4000" pageHeight="2000" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1286,7 +1286,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="WTlk7o9_NWYsXHJ2d4__" name="CheckPoint Security Inspection Zone">
-    <mxGraphModel dx="2146" dy="1617" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="1">
+    <mxGraphModel dx="1262" dy="1104" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="1">
       <root>
         <mxCell id="d-2u2nNUJMkexTz8gBI0-0" />
         <mxCell id="d-2u2nNUJMkexTz8gBI0-1" parent="d-2u2nNUJMkexTz8gBI0-0" />
@@ -3213,6 +3213,71 @@
         </mxCell>
         <mxCell id="lxt4UgZ9up9BVDfxZDEc-2" style="edgeStyle=orthogonalEdgeStyle;curved=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;fontSize=30;startArrow=none;startFill=0;endArrow=none;endFill=0;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;strokeWidth=1;endSize=6;" parent="6jyasOENzGWjFtHdg95h-1" source="lYQEjlwKMJYT7aDpCcD8-40" target="lYQEjlwKMJYT7aDpCcD8-26" edge="1">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="g5Bdio5meBSUjclMD5JY" name="Page-7">
+    <mxGraphModel dx="2062" dy="1104" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-0" />
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-1" parent="5v4j9pXB-Qu36WGeBWvi-0" />
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-2" target="5v4j9pXB-Qu36WGeBWvi-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-2" target="5v4j9pXB-Qu36WGeBWvi-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-2" value="&lt;div&gt;CASB&lt;/div&gt;&lt;div&gt;Cloud Access Security Broker&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="20" y="430" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-3" target="5v4j9pXB-Qu36WGeBWvi-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-3" value="&lt;div&gt;CNAPP&lt;/div&gt;&lt;div&gt;Cloud Native Application Protection Platoform&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="820" y="430" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-4" target="5v4j9pXB-Qu36WGeBWvi-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-4" value="&lt;div&gt;CIEM&lt;/div&gt;&lt;div&gt;Cloud Infrastructure Entitlement Management&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="405" y="280" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-6" target="5v4j9pXB-Qu36WGeBWvi-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-6" value="&lt;div&gt;CSPM&lt;/div&gt;&lt;div&gt;Cloud Security Posture Management&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="260" y="430" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-7" target="5v4j9pXB-Qu36WGeBWvi-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" edge="1" parent="5v4j9pXB-Qu36WGeBWvi-1" source="5v4j9pXB-Qu36WGeBWvi-7" target="5v4j9pXB-Qu36WGeBWvi-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-7" value="&lt;div&gt;CWPP&lt;/div&gt;&lt;div&gt;Cloud Workload Protection Platform&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="540" y="430" width="110" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-12" value="3rd Party SaaS tools like Slack, Dropbox, O365, etc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="15" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-14" value="Cloud Security Posture Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="255" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-16" value="Cloud Workload Protection Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="535" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-18" value="Cloud Native Application Protection Platoform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="815" y="640" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="5v4j9pXB-Qu36WGeBWvi-20" value="Cloud Infrastructure Entitlement Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="5v4j9pXB-Qu36WGeBWvi-1">
+          <mxGeometry x="400" y="100" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
