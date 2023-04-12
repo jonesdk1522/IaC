@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Temporary Working Stack"
+Resources:
+  Vpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      Tags:
+        - Key: "Name"
+          Value: "CustomerVPC1"
+  VpcSubnet0:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      CidrBlock: "10.0.10.0/24"
+      MapPublicIpOnLaunch: false
+      VpcId:
+        Ref: "Vpc"
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs:
+              Ref: "AWS::Region"
+      Tags:
+        - Key: "Name"
+          Value: "CustomerSub1"
+  VpcRouteTable0:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId:
+        Ref: "Vpc"
+      Tags:
+        - Key: "Name"
+          Value: "CustomerRT1"
+  VpcRouteTable0Assoc1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId:
+        Ref: "VpcRouteTable0"
+      SubnetId:
+        Ref: "VpcSubnet1"
+  VpcRouteTable0Assoc0:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId:
+        Ref: "VpcRouteTable0"
+      SubnetId:
+        Ref: "VpcSubnet0"
+  VpcRouteTable0VpcRoute0:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      RouteTableId:
+        Ref: "VpcRouteTable0"
+      TransitGatewayId: 0
+Parameters: {}
+Metadata: {}
+Conditions: {}
