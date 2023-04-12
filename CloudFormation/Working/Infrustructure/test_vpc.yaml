@@ -117,8 +117,8 @@ Resources:
       LaunchTemplateData:
         MetadataOptions:
           HttpTokens: "required"
-      IamInstanceProfile: 
-        Arn: arn:aws:iam::704999452754:instance-profile/EC2AdminAccess
+        IamInstanceProfile: 
+          Arn: arn:aws:iam::704999452754:instance-profile/EC2AdminAccess
   Ec2Instance:
     DependsOn: PrivateSubnet
     Type: "AWS::EC2::Instance"
