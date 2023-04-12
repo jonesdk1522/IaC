@@ -137,7 +137,7 @@ Resources:
         LaunchTemplateId:
           Ref: "LaunchTemplate"
         Version: "1"
-      KeyName: "prod23-us-east-1"
+      KeyName: "prod22-us-east-1"
       Tags:
         - Key: "Name"
-          Value: "TestEC2"
+          Value: "TestEC2-prod22"
