@@ -1,0 +1,10 @@
+{
+  "name": "clamav-scanner",
+  "scripts": {
+    "setup": "ts-node scripts/setup.ts",
+    "build": "ts-node scripts/build.ts",
+    "build:lambda": "esbuild lambda/scanner.ts --bundle --platform=node --target=node18 --outfile=dist/scanner.js",
+    "deploy": "ts-node scripts/deploy.ts",
+    "all": "npm run setup && npm run build && npm run deploy"
+  }
+}
