@@ -53,16 +53,25 @@ done
 
 if [ "$FILES_MISSING" = true ]; then
   echo "📥 Downloading ClamAV signature files..."
+  
+  # Create temporary directory with proper permissions
+  TEMP_DIR=$(mktemp -d)
+  chmod 777 "$TEMP_DIR"
+  
   # Create temporary container to download files
   if ! docker run --rm \
-    -v "$PWD":/data \
+    -v "$TEMP_DIR":/var/lib/clamav:Z \
     clamav/clamav:latest \
-    sh -c "cd /data && \
-           freshclam --no-warnings --datadir=/data && \
-           chown $(id -u):$(id -g) /data/*.{cvd,cld} 2>/dev/null || true"; then
+    freshclam --no-warnings --datadir=/var/lib/clamav; then
     echo "❌ Failed to download signature files"
+    rm -rf "$TEMP_DIR"
     exit 1
   fi
+  
+  # Copy files to current directory
+  echo "📁 Copying signature files to working directory..."
+  cp "$TEMP_DIR"/*.{cvd,cld} . 2>/dev/null || true
+  rm -rf "$TEMP_DIR"
   
   # Verify downloads were successful - checking both .cvd and .cld
   for base in main daily bytecode; do
