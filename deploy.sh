@@ -14,5 +14,15 @@ if ! command -v docker &> /dev/null; then
     brew install --cask docker
 fi
 
+# Install dependencies
+echo "Installing dependencies..."
+npm install
+
+# Initialize TypeScript if not present
+if [ ! -f "tsconfig.json" ]; then
+    echo "Initializing TypeScript..."
+    npx tsc --init
+fi
+
 # Initialize and deploy
 npm run all
