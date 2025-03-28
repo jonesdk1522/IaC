@@ -1,0 +1,15 @@
+unzip main_part1.cvd.zip -d ~/clamav-defs
+unzip main_part2.cvd.zip -d ~/clamav-defs
+
+cat ~/clamav-defs/main_part1.cvd ~/clamav-defs/main_part2.cvd > ~/clamav-defs/main.cvd
+
+ls -lh ~/clamav-defs/main.cvd
+
+
+cp ~/clamav-defs/*.cvd /path/to/CONN-ClamAV-scan/
+
+cd /path/to/CONN-ClamAV-scan
+docker build --no-cache -t clamav-lambda .
+docker run --name clamav-layer clamav-lambda
+docker cp clamav-layer:/home/build/clamav_lambda_layer.zip .
+docker rm clamav-layer
