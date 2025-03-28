@@ -11,13 +11,35 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 source "$ENV_FILE"
 
-### === Validate real .cvd files ===
+### === Check and download ClamAV signature files ===
+echo "🔍 Checking ClamAV signature files..."
+FILES_MISSING=false
 for file in main.cvd daily.cvd bytecode.cvd; do
   if [ ! -f "$file" ]; then
-    echo "❌ Missing $file — must be a real ClamAV signature file (main.cvd, daily.cvd, bytecode.cvd)"
-    exit 1
+    FILES_MISSING=true
+    break
   fi
 done
+
+if [ "$FILES_MISSING" = true ]; then
+  echo "📥 Downloading ClamAV signature files..."
+  # Create temporary container to download files
+  docker run --rm \
+    -v "$PWD":/data \
+    clamav/clamav:latest \
+    sh -c "cd /data && freshclam --no-warnings"
+  
+  # Verify downloads were successful
+  for file in main.cvd daily.cvd bytecode.cvd; do
+    if [ ! -f "$file" ]; then
+      echo "❌ Failed to download $file"
+      exit 1
+    fi
+    echo "✅ Verified $file"
+  done
+else
+  echo "✅ All ClamAV signature files present"
+fi
 
 ### === Build Docker layer image ===
 echo "🐳 Building Docker image for Lambda layer..."
