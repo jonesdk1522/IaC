@@ -14,8 +14,10 @@ source "$ENV_FILE"
 ### === Check and download ClamAV signature files ===
 echo "🔍 Checking ClamAV signature files..."
 FILES_MISSING=false
-for file in main.cvd daily.cvd bytecode.cvd; do
-  if [ ! -f "$file" ]; then
+
+# Check for either .cvd or .cld files
+for base in main daily bytecode; do
+  if [ ! -f "${base}.cvd" ] && [ ! -f "${base}.cld" ]; then
     FILES_MISSING=true
     break
   fi
@@ -24,18 +26,27 @@ done
 if [ "$FILES_MISSING" = true ]; then
   echo "📥 Downloading ClamAV signature files..."
   # Create temporary container to download files
-  docker run --rm \
+  if ! docker run --rm \
     -v "$PWD":/data \
     clamav/clamav:latest \
-    sh -c "cd /data && freshclam --no-warnings"
+    sh -c "cd /data && \
+           freshclam --no-warnings --datadir=/data && \
+           chown $(id -u):$(id -g) /data/*.{cvd,cld} 2>/dev/null || true"; then
+    echo "❌ Failed to download signature files"
+    exit 1
+  fi
   
-  # Verify downloads were successful
-  for file in main.cvd daily.cvd bytecode.cvd; do
-    if [ ! -f "$file" ]; then
-      echo "❌ Failed to download $file"
+  # Verify downloads were successful - checking both .cvd and .cld
+  for base in main daily bytecode; do
+    if [ ! -f "${base}.cvd" ] && [ ! -f "${base}.cld" ]; then
+      echo "❌ Failed to download ${base} signature file"
       exit 1
     fi
-    echo "✅ Verified $file"
+    if [ -f "${base}.cvd" ]; then
+      echo "✅ Verified ${base}.cvd"
+    else
+      echo "✅ Verified ${base}.cld"
+    fi
   done
 else
   echo "✅ All ClamAV signature files present"
