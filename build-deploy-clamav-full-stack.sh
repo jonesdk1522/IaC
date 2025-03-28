@@ -3,6 +3,34 @@ set -euo pipefail
 
 echo "📦 Full ClamAV Lambda Layer Build, Deploy & Test (Clean + EICAR + Logging)"
 
+### === Check system requirements ===
+echo "🔍 Checking system requirements..."
+
+# Install Docker if not present (Amazon Linux 2023 specific)
+if ! command -v docker &> /dev/null; then
+    echo "📦 Installing Docker..."
+    sudo dnf update -y
+    sudo dnf install docker -y
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -aG docker ec2-user
+    echo "⚠️ Please reconnect to your session for docker group changes to take effect"
+    exit 1
+fi
+
+# Check if Docker daemon is running
+if ! docker info >/dev/null 2>&1; then
+    echo "🔄 Starting Docker daemon..."
+    sudo systemctl start docker
+    sleep 5  # Wait for Docker to start
+fi
+
+# Install AWS CLI if not present
+if ! command -v aws &> /dev/null; then
+    echo "📦 Installing AWS CLI..."
+    sudo dnf install aws-cli -y
+fi
+
 ### === Load config ===
 ENV_FILE=".env"
 if [ ! -f "$ENV_FILE" ]; then
