@@ -1,24 +1,11 @@
-  // Join with colons and compress zeros
-  let ipv6 = parts.join(":");
+  // Remove trailing zeros before the last colon
+  ipv6 = ipv6.replace(/:0+$/, "");
   
-  // Find longest sequence of zeros for compression
-  let longestZeros = "";
-  let longestZerosLength = 0;
-  const matches = ipv6.match(/(?:(?:^|:)0(?::0)*(?::|$))/g) || [];
-  
-  for (const match of matches) {
-    if (match.length > longestZerosLength) {
-      longestZeros = match;
-      longestZerosLength = match.length;
-    }
+  // Compress runs of zeros
+  const zeroRegex = /(?:^|:)(?:0:){2,}/;
+  const match = ipv6.match(zeroRegex);
+  if (match) {
+    const start = match.index;
+    const length = match[0].length;
+    ipv6 = ipv6.slice(0, start) + "::" + ipv6.slice(start + length);
   }
-
-  // Replace longest run of zeros with ::
-  if (longestZerosLength > 0) {
-    ipv6 = ipv6.replace(longestZeros, "::");
-  }
-
-  // Clean up edge cases
-  ipv6 = ipv6.replace(/^::/, "::").replace(/::$/, "::");
-  
-  return ipv6;
