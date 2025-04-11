@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Assign IPv6 CIDRs to subnets using Lambda and a custom resource
+
+Parameters:
+  BaseIpv6Block:
+    Type: String
+    Description: Base IPv6 /56 block for subnet allocations (e.g., 2600:abcd:1234:1000::/56)
+  Subnet1Id:
+    Type: String
+  Subnet2Id:
+    Type: String
+  Subnet3Id:
+    Type: String
+  Subnet4Id:
+    Type: String
+  Subnet5Id:
+    Type: String
+  Subnet6Id:
+    Type: String
+  Subnet7Id:
+    Type: String
+  Subnet8Id:
+    Type: String
+  Subnet9Id:
+    Type: String
+  Subnet10Id:
+    Type: String
+  Subnet11Id:
+    Type: String
+  Subnet12Id:
+    Type: String
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: AssignIpv6Policy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:AssociateSubnetCidrBlock
+            Resource: "*"
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: "*"
+
+  AssignIpv6Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: assign-ipv6-custom-resource
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 60
+      Code:
+        S3Bucket: your-s3-bucket-name
+        S3Key: assign-ipv6-custom-resource.zip
+
+  AssignIpv6CustomResource:
+    Type: Custom::AssignIpv6
+    Properties:
+      ServiceToken: !GetAtt AssignIpv6Function.Arn
+      BaseIpv6Block: !Ref BaseIpv6Block
+      SubnetIds:
+      - !Ref Subnet1Id
+      - !Ref Subnet2Id
+      - !Ref Subnet3Id
+      - !Ref Subnet4Id
+      - !Ref Subnet5Id
+      - !Ref Subnet6Id
+      - !Ref Subnet7Id
+      - !Ref Subnet8Id
+      - !Ref Subnet9Id
+      - !Ref Subnet10Id
+      - !Ref Subnet11Id
+      - !Ref Subnet12Id
