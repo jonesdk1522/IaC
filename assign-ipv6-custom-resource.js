@@ -5,7 +5,7 @@ const url = require('url');
 const AWS = require('aws-sdk');
 
 // Configure AWS region
-AWS.config.update({ region: 'us-east-1' }); // Replace with your desired region
+AWS.config.update({ region: 'us-gov-west-1' });
 const ec2 = new AWS.EC2();
 
 function sendResponse(event, context, responseStatus, responseData) {
