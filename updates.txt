@@ -1,7 +1,14 @@
-- ec2:AssociateSubnetCidrBlock
-            - ec2:DescribeVpcs
-            - ec2:DescribeSubnets
-            - ec2:AssociateVpcCidrBlock
-            - ec2:DisassociateSubnetCidrBlock
-            - ec2:DescribeVpcAttribute
-            - ec2:ModifySubnetAttribute
+{
+  "RequestType": "Create",
+  "ResponseURL": "http://pre-signed-S3-url-for-response",
+  "StackId": "test-stack-id",
+  "RequestId": "test-request-id",
+  "LogicalResourceId": "AssignIpv6CustomResource",
+  "ResourceProperties": {
+    "VpcId": "vpc-xxxxx",
+    "SubnetIds": [
+      "subnet-xxxxx1",
+      "subnet-xxxxx2"
+    ]
+  }
+}
