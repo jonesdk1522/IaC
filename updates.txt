@@ -1,0 +1,7 @@
+- ec2:AssociateSubnetCidrBlock
+            - ec2:DescribeVpcs
+            - ec2:DescribeSubnets
+            - ec2:AssociateVpcCidrBlock
+            - ec2:DisassociateSubnetCidrBlock
+            - ec2:DescribeVpcAttribute
+            - ec2:ModifySubnetAttribute
