@@ -8,12 +8,6 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'us-east-1' }); // Replace with your desired region
 const ec2 = new AWS.EC2();
 
-// function sendResponse(event, context, responseStatus, responseData) {
-//   console.log(`[Mock Response] ${responseStatus}:`, responseData);
-// }
-
-// Uncomment the following lines to enable actual response sending
-
 function sendResponse(event, context, responseStatus, responseData) {
   const responseBody = JSON.stringify({
     Status: responseStatus,
@@ -83,16 +77,30 @@ function getSubnetIpv6Cidr(baseCidr, index, newPrefixLength = 64) {
 
 exports.handler = async (event, context) => {
   console.log('Event:', JSON.stringify(event, null, 2));
-  const { SubnetIds, BaseIpv6Block } = event.ResourceProperties;
+  const { SubnetIds, VpcId } = event.ResourceProperties;
 
   if (event.RequestType === 'Delete') {
     return sendResponse(event, context, 'SUCCESS', { Message: 'No action needed on delete' });
   }
 
   try {
+    // Need to get VPC Id
+    const vpcResponse = await ec2.describeVpcs({
+      VpcIds: [VpcId]
+    }).promise();
+
+    const vpc = vpcResponse.Vpcs[0];
+    const ipv6Association = vpc.Ipv6CidrBlockAssociationSet?.[0];
+
+    if (!ipv6Association?.ipv6CidrBlock) {
+      throw new Error ('VPC has no IPv6 CIDR assigned.');
+    }
+
+    const baseIpv6Block = ipv6Association.Ipv6CidrBlock;
+
     for (let i = 0; i < SubnetIds.length; i++) {
       const subnetId = SubnetIds[i];
-      const cidr = getSubnetIpv6Cidr(BaseIpv6Block, i);
+      const cidr = getSubnetIpv6Cidr(baseIpv6Block, i);
       console.log(`Assigning ${cidr} to ${subnetId}`);
       await ec2.associateSubnetCidrBlock({
         SubnetId: subnetId,
