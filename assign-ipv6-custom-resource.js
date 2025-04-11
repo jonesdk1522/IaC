@@ -76,41 +76,75 @@ function getSubnetIpv6Cidr(baseCidr, index, newPrefixLength = 64) {
 }
 
 exports.handler = async (event, context) => {
-  console.log('Event:', JSON.stringify(event, null, 2));
-  const { SubnetIds, VpcId } = event.ResourceProperties;
-
-  if (event.RequestType === 'Delete') {
-    return sendResponse(event, context, 'SUCCESS', { Message: 'No action needed on delete' });
-  }
-
   try {
-    // Need to get VPC Id
-    const vpcResponse = await ec2.describeVpcs({
-      VpcIds: [VpcId]
-    }).promise();
+    console.log('Received event:', JSON.stringify(event, null, 2));
 
-    const vpc = vpcResponse.Vpcs[0];
-    const ipv6Association = vpc.Ipv6CidrBlockAssociationSet?.[0];
-
-    if (!ipv6Association?.ipv6CidrBlock) {
-      throw new Error ('VPC has no IPv6 CIDR assigned.');
+    // Handle DELETE requests immediately
+    if (event.RequestType === 'Delete') {
+      console.log('Delete request - sending immediate success response');
+      await sendResponse(event, context, 'SUCCESS', {
+        Message: 'Resource deletion initiated'
+      });
+      // Optionally perform cleanup after responding
+      try {
+        // Add any cleanup logic here
+        console.log('Cleanup completed');
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+        // Don't throw - we already sent success response
+      }
+      return;
     }
 
-    const baseIpv6Block = ipv6Association.Ipv6CidrBlock;
+    // For CREATE and UPDATE, do the work first
+    if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+      const { SubnetIds, VpcId } = event.ResourceProperties;
 
-    for (let i = 0; i < SubnetIds.length; i++) {
-      const subnetId = SubnetIds[i];
-      const cidr = getSubnetIpv6Cidr(baseIpv6Block, i);
-      console.log(`Assigning ${cidr} to ${subnetId}`);
-      await ec2.associateSubnetCidrBlock({
-        SubnetId: subnetId,
-        Ipv6CidrBlock: cidr,
+      // Need to get VPC Id
+      const vpcResponse = await ec2.describeVpcs({
+        VpcIds: [VpcId]
       }).promise();
+
+      const vpc = vpcResponse.Vpcs[0];
+      const ipv6Association = vpc.Ipv6CidrBlockAssociationSet?.[0];
+
+      if (!ipv6Association?.ipv6CidrBlock) {
+        throw new Error ('VPC has no IPv6 CIDR assigned.');
+      }
+
+      const baseIpv6Block = ipv6Association.Ipv6CidrBlock;
+
+      for (let i = 0; i < SubnetIds.length; i++) {
+        const subnetId = SubnetIds[i];
+        const cidr = getSubnetIpv6Cidr(baseIpv6Block, i);
+        console.log(`Assigning ${cidr} to ${subnetId}`);
+        await ec2.associateSubnetCidrBlock({
+          SubnetId: subnetId,
+          Ipv6CidrBlock: cidr,
+        }).promise();
+      }
+
+      // Send success response with the results
+      await sendResponse(event, context, 'SUCCESS', {
+        Message: `${event.RequestType} completed successfully`,
+        VpcId: event.ResourceProperties.VpcId,
+        SubnetIds: event.ResourceProperties.SubnetIds
+      });
     }
 
-    sendResponse(event, context, 'SUCCESS', { Message: 'IPv6 CIDRs assigned successfully' });
-  } catch (err) {
-    console.error('Error assigning CIDRs:', err);
-    sendResponse(event, context, 'FAILED', { Error: err.message });
+  } catch (error) {
+    console.error('Error:', error);
+    await sendResponse(event, context, 'FAILED', {
+      Message: `Error: ${error.message}`,
+      StackTrace: error.stack
+    });
   }
+
+  // Ensure the function completes
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ 
+      message: `${event.RequestType} operation completed` 
+    })
+  };
 };
