@@ -1,14 +1,41 @@
-{
-  "RequestType": "Create",
-  "ResponseURL": "http://pre-signed-S3-url-for-response",
-  "StackId": "test-stack-id",
-  "RequestId": "test-request-id",
-  "LogicalResourceId": "AssignIpv6CustomResource",
-  "ResourceProperties": {
-    "VpcId": "vpc-xxxxx",
-    "SubnetIds": [
-      "subnet-xxxxx1",
-      "subnet-xxxxx2"
-    ]
-  }
+2025-04-11T22:19:37.319Z	a1525083-06f7-4173-8102-7ad465b5701b	INFO	{
+  CidrBlock: '10.148.28.0/22',
+  DhcpOptionsId: 'dopt-029d260924cf5bbf8',
+  State: 'available',
+  VpcId: 'vpc-0a034a4a4144b71ee',
+  OwnerId: '602783229959',
+  InstanceTenancy: 'default',
+  Ipv6CidrBlockAssociationSet: [
+    {
+      AssociationId: 'vpc-cidr-assoc-035afb178132a1f7f',
+      Ipv6CidrBlock: '2610:30:e000:800::/56',
+      Ipv6CidrBlockState: [Object],
+      Ipv6Pool: 'IPAM Managed',
+      Ipv6AddressAttribute: 'private',
+      IpSource: 'none'
+    }
+  ],
+  CidrBlockAssociationSet: [
+    {
+      AssociationId: 'vpc-cidr-assoc-0b55bb20a69ed838d',
+      CidrBlock: '10.148.28.0/22',
+      CidrBlockState: [Object]
+    }
+  ],
+  IsDefault: false,
+  Tags: [
+    { Key: 'aws:cloudformation:logical-id', Value: 'VPC' },
+    {
+      Key: 'aws:cloudformation:stack-name',
+      Value: 'test20-NetworkingStack-1EWHH1NQYFQQB'
+    },
+    { Key: 'Environment', Value: 'Prod-mail-relay' },
+    { Key: 'Name', Value: 'c-a-ugw1a-c-vpc-p-epz-cybersecurity' },
+    {
+      Key: 'aws:cloudformation:stack-id',
+      Value: 'arn:aws-us-gov:cloudformation:us-gov-west-1:602783229959:stack/test20-NetworkingStack-1EWHH1NQYFQQB/584d6b70-171b-11f0-aa28-0623190c8a5d'
+    },
+    { Key: 'Department', Value: 'Cyber' },
+    { Key: 'Project', Value: 'SkyHigh' }
+  ]
 }
