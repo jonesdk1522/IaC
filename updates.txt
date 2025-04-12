@@ -1,11 +1,2 @@
-  // Remove trailing zeros before the last colon
-  ipv6 = ipv6.replace(/:0+$/, "");
-  
-  // Compress runs of zeros
-  const zeroRegex = /(?:^|:)(?:0:){2,}/;
-  const match = ipv6.match(zeroRegex);
-  if (match) {
-    const start = match.index;
-    const length = match[0].length;
-    ipv6 = ipv6.slice(0, start) + "::" + ipv6.slice(start + length);
-  }
+AKIAYYWFOFADTKLHNIH3
+0jfwKInGRUVjnW+igoTsYhex1WM298iM70gFwsdv
