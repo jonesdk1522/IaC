@@ -106,29 +106,23 @@ function bigIntToIpv6(value) {
   }
 }
 
-function getSubnetIpv6Cidr(baseCidr, index, newPrefixLength = 64) {
+function getSubnetIpv6Cidr(baseVpcCidr, index) {
   try {
-    const [baseAddr, basePrefixLength] = baseCidr.split('/');
-    const baseBigInt = ipv6ToBigInt(baseAddr);
+    // Split the VPC CIDR into address and prefix length
+    const [baseAddress, vpcPrefixLength] = baseVpcCidr.split('/');
     
-    // Convert decimal index to hex (00-ff)
-    const hexIndex = (0x800 + index).toString(16).slice(1);
-    console.log(`Converting index ${index} to hex: ${hexIndex}`);
+    // Split the address into its segments
+    const segments = baseAddress.split(':');
     
-    // Convert hex string to BigInt
-    const offset = BigInt(`0x${hexIndex}`) << BigInt(128 - newPrefixLength);
+    // The subnet index goes into the 4th segment (index 3)
+    // Convert the 4th segment to a number and add the index
+    const baseNum = parseInt(segments[3], 16);
+    segments[3] = (baseNum + index).toString(16);
     
-    const subnetAddrBigInt = baseBigInt + offset;
-    const result = `${bigIntToIpv6(subnetAddrBigInt)}/${newPrefixLength}`;
-    console.log(`Subnet index ${index} (hex: ${hexIndex}) -> CIDR: ${result}`);
-    
-    return result;
+    // Join back with /64 prefix
+    return `${segments.join(':')}:/64`;
   } catch (error) {
-    console.error('Error in getSubnetIpv6Cidr:', {
-      baseCidr,
-      index,
-      error: error.message
-    });
+    console.error('Error creating subnet CIDR:', error);
     throw error;
   }
 }
@@ -220,4 +214,11 @@ exports.handler = async (event, context) => {
       message: `${event.RequestType} operation completed` 
     })
   };
+};
+
+// Export only the functions needed for testing
+module.exports = {
+  getSubnetIpv6Cidr,
+  ipv6ToBigInt,
+  bigIntToIpv6
 };
