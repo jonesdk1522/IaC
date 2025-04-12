@@ -1,0 +1,588 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Networking stack: VPC, subnets, IGW, TGW attachment, NAT gateway, and route tables.'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+  ProjectName:
+    Type: String
+  Department:
+    Type: String
+  CyberVPCCIDR:
+    Type: String
+  CyberVPCV6CIDR:
+    Type: String
+  Ipv6IPAMPoolId:
+    Type: String
+  Ipv6NetmaskLength:
+    Type: Number
+    Default: 56
+
+# TGW Parameters
+  TGWPrivateSubnetCIDR1:
+    Type: String
+  TGWPrivateSubnetCIDR2:
+    Type: String
+  TGWSubnetV6CIDR1:
+    Type: String
+  TGWSubnetV6CIDR2:
+    Type: String
+
+# Proxy NLB Parameters
+  ProxyNLBPrivateSubnetCIDR1:
+    Type: String
+  ProxyNLBPrivateSubnetCIDR2:
+    Type: String
+  ProxyNLBSubnetV6CIDR1:
+    Type: String
+  ProxyNLBSubnetV6CIDR2:
+    Type: String
+
+   # Proxy Parameters
+  # V4 Subnets
+  ProxyPrivateSubnetCIDR1:
+    Type: String
+    Description: Proxy Server V4 Private Subnets
+  ProxyPrivateSubnetCIDR2:
+    Type: String
+    Description: Proxy Server V4 Private Subnets
+
+  # V6 Subnets
+  ProxySubnetV6CIDR1:
+    Type: String
+    Description: Proxy Server V6 Private Subnets
+  ProxySubnetV6CIDR2:
+    Type: String
+    Description: Proxy Server V6 Private Subnets
+
+  # Mail Relay parameters
+  # V4/6 External Subnets
+  MailRelayExternalSubnetCIDR1:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayExternalSubnetCIDR2:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayExternalSubnetV6CIDR1:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+  MailRelayExternalSubnetV6CIDR2:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+
+# V4/6 Internal Subnets
+  MailRelayInternalSubnetCIDR1:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayInternalSubnetCIDR2:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayInternalSubnetV6CIDR1:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+  MailRelayInternalSubnetV6CIDR2:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+
+# V4/6 Mgmt Subnets
+  MailRelayMgmtSubnetCIDR1:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayMgmtSubnetCIDR2:
+    Type: String
+    Description: Mail Relay Server V4 Private Subnets
+  MailRelayMgmtSubnetV6CIDR1:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+  MailRelayMgmtSubnetV6CIDR2:
+    Type: String
+    Description: Mail Relay Server V6 Private Subnets
+  TransitGatewayId:
+    Type: String
+    Description: Existing Transit Gateway ID to attach to
+
+
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref CyberVPCCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+      - Key: Name
+        Value: !Sub 'c-a-ugw1a-c-vpc-p-epz-cybersecurity'
+      - Key: Environment
+        Value: !Ref EnvironmentName
+      - Key: Project
+        Value: !Ref ProjectName
+      - Key: Department
+        Value: !Ref Department
+
+  Ipv6VPCCidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+        AmazonProvidedIpv6CidrBlock: false
+        Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+        Ipv6NetmaskLength: 56
+        VpcId: !Ref VPC
+
+# Gateway Configurations #
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-CyberVPC-igw'
+
+  AttachIGW:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref IGW
+      VpcId: !Ref VPC
+
+  # NATGateway:
+  #   Type: AWS::EC2::NatGateway
+  #   Properties:
+  #     AllocationId: !GetAtt NATEIP.AllocationId
+  #     SubnetId: !Ref EPZMailRelayExternalSubnetCIDR1
+  #     Tags:
+  #     - Key: Name
+  #       Value: !Sub '${ProjectName}-${EnvironmentName}--CyberVPC-natgw'
+
+  # NATEIP:
+  #   Type: AWS::EC2::EIP
+  #   Properties:
+  #     Domain: vpc
+
+# Transit Gateway Subnet Configurations
+  EPZCyberVPCTGWSubnetCIDR1:
+    DependsOn: Ipv6VPCCidrBlock
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref TGWSubnetV6CIDR1
+      CidrBlock: !Ref TGWPrivateSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-tgw-1a'
+
+  EPZCyberVPCTGWSubnetCIDR2:
+    DependsOn: EPZCyberVPCTGWSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref TGWSubnetV6CIDR1
+      CidrBlock: !Ref TGWPrivateSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-tgw-1b'
+
+# Proxy NLB Subnet Configurations
+  EPZProxyNLBSubnetCIDR1:
+    DependsOn: EPZCyberVPCTGWSubnetCIDR2
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref ProxyNLBSubnetV6CIDR1
+      CidrBlock: !Ref ProxyNLBPrivateSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-proxy-nlb-1a'
+
+  EPZProxyNLBSubnetCIDR2:
+    DependsOn: EPZProxyNLBSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref ProxyNLBSubnetV6CIDR2
+      CidrBlock: !Ref ProxyNLBPrivateSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-proxy-nlb-1b'
+
+# Proxy Subnet Configurations
+  EPZProxyPrivateSubnetCIDR1:
+    DependsOn: EPZProxyNLBSubnetCIDR2
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref ProxySubnetV6CIDR1
+      CidrBlock: !Ref ProxyPrivateSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-proxy-1a'
+
+  EPZProxyPrivateSubnetCIDR2:
+    DependsOn: EPZProxyPrivateSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref ProxySubnetV6CIDR2
+      CidrBlock: !Ref ProxyPrivateSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-proxy-1b'
+
+# Mail Relay Subnet Configurations
+  EPZMailRelayMgmtSubnetCIDR1:
+    DependsOn: EPZProxyPrivateSubnetCIDR2
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayMgmtSubnetV6CIDR1
+      CidrBlock: !Ref MailRelayMgmtSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailmgmt-1a'
+
+  EPZMailRelayMgmtSubnetCIDR2:
+    DependsOn: EPZMailRelayMgmtSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayMgmtSubnetV6CIDR2
+      CidrBlock: !Ref MailRelayMgmtSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailmgmt-1b'
+
+  EPZMailRelayInternalSubnetCIDR1:
+    DependsOn: EPZMailRelayMgmtSubnetCIDR2
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayInternalSubnetV6CIDR1
+      CidrBlock: !Ref MailRelayInternalSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailint-1a'
+
+  EPZMailRelayInternalSubnetCIDR2:
+    DependsOn: EPZMailRelayInternalSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayInternalSubnetV6CIDR2
+      CidrBlock: !Ref MailRelayInternalSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailint-1b'
+
+  EPZMailRelayExternalSubnetCIDR1:
+    DependsOn: EPZMailRelayInternalSubnetCIDR2
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayExternalSubnetV6CIDR1
+      CidrBlock: !Ref MailRelayExternalSubnetCIDR1
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailext-1a'
+
+  EPZMailRelayExternalSubnetCIDR2:
+    DependsOn: EPZMailRelayExternalSubnetCIDR1
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AssignIpv6AddressOnCreation: true
+      # EnableDns64: true
+      # Ipv6IpamPoolId: !Ref Ipv6IPAMPoolId
+      # Ipv6CidrBlock: !Ref MailRelayExternalSubnetV6CIDR2
+      CidrBlock: !Ref MailRelayExternalSubnetCIDR2
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags:
+      - Key: Name
+        Value: 'c-a-ugw1a-c-sbn-p-epz-cybersecurity-mailext-1b'
+
+# Proxy Route Table #
+  ProxyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-proxy-rt'
+
+# Mail Relay Route Table #
+  MailRelayExternalRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-external-rt'
+
+  MailRelayInternalRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-internal-rt'
+
+  MailRelayMgmtRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-mgmt-rt'
+
+  CyberVpcTGWRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-cyber-vpc-tgw-rt'
+
+# Mail Relay Routes #
+# You cannot have both IPv4 and IPv6 routes in the same route resource
+  MailRelayExternalRouteIpv4:
+    Type: AWS::EC2::Route
+    DependsOn: AttachIGW
+    Properties:
+      RouteTableId: !Ref MailRelayExternalRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGW
+
+  # MailRelayExternalRouteIpv6:
+  #   Type: AWS::EC2::Route
+  #   DependsOn: AttachIGW
+  #   Properties:
+  #     RouteTableId: !Ref MailRelayExternalRouteTable
+  #     DestinationIpv6CidrBlock: '::0/' # < -- Colons break YAML. Make sure you wrap them in quotes.
+  #     GatewayId: !Ref IGW
+
+  # MailRelayInternalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref MailRelayInternalRouteTable
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     DestinationIpv6CidrBlock:
+  #     NatGatewayId: !Ref NATGateway
+
+# Proxy ServerRoute Table Associations #
+  ProxyPrivateSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZProxyPrivateSubnetCIDR1
+      RouteTableId: !Ref ProxyRouteTable
+
+  ProxyPrivateSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZProxyPrivateSubnetCIDR2
+      RouteTableId: !Ref ProxyRouteTable
+
+# Mail Relay Route Tab;e Associations #
+  MailRelayExternalRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayExternalSubnetCIDR1
+      RouteTableId: !Ref MailRelayExternalRouteTable
+
+  MailRelayExternalRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayExternalSubnetCIDR2
+      RouteTableId: !Ref MailRelayExternalRouteTable
+
+  MailRelayInternalRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayInternalSubnetCIDR1
+      RouteTableId: !Ref MailRelayInternalRouteTable
+
+  MailRelayInternalRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayInternalSubnetCIDR2
+      RouteTableId: !Ref MailRelayInternalRouteTable
+
+  MailRelayMgmtRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayMgmtSubnetCIDR1
+      RouteTableId: !Ref MailRelayMgmtRouteTable
+
+  MailRelayMgmtRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZMailRelayMgmtSubnetCIDR2
+      RouteTableId: !Ref MailRelayMgmtRouteTable
+
+  CyberVpcTGWRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZCyberVPCTGWSubnetCIDR1
+      RouteTableId: !Ref CyberVpcTGWRouteTable
+
+  CyberVpcTGWRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EPZCyberVPCTGWSubnetCIDR2
+      RouteTableId: !Ref CyberVpcTGWRouteTable
+
+# Transit Gateway Attachments #
+  TransitGatewayAttachment:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      TransitGatewayId: !Ref TransitGatewayId
+      VpcId: !Ref VPC
+      SubnetIds:
+        - !Ref EPZCyberVPCTGWSubnetCIDR1
+        - !Ref EPZCyberVPCTGWSubnetCIDR2
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-tgw-attachment'
+
+Outputs:
+  CyberVPCId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-CyberVPCId'
+
+# TGW Subnet ID Exports
+  TGWSubnetId1:
+    Value: !GetAtt EPZCyberVPCTGWSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-TGWPrivateSubnetCIDR1'
+  TGWSubnetId2:
+    Value: !GetAtt EPZCyberVPCTGWSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-TGWPrivateSubnetCIDR2'
+
+# Proxy NLB Subnet ID Exports
+  ProxyNLBSubnetId1:
+    Value: !GetAtt EPZProxyNLBSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyNLBPrivateSubnetCIDR1'
+  ProxyNLBSubnetId2:
+    Value: !GetAtt EPZProxyNLBSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyNLBPrivateSubnetCIDR2'
+
+# Proxy Subnet ID Exports
+  ProxyPrivateSubnetId1:
+    Value: !GetAtt EPZProxyPrivateSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyPrivateSubnetCIDR1'
+  ProxyPrivateSubnetId2:
+    Value: !GetAtt EPZProxyPrivateSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyPrivateSubnetCIDR2'
+
+# Mail Relay Subnet ID Exports
+  MailRelayMgmtSubnetCId1:
+    Value: !GetAtt EPZMailRelayMgmtSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayMgmtSubnetCIDR1'
+  MailRelayMgmtSubnetCId2:
+    Value: !GetAtt EPZMailRelayMgmtSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayMgmtSubnetCIDR2'
+
+  MailRelayInternalSubnetCId1:
+    Value: !GetAtt EPZMailRelayExternalSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayInternalSubnetCIDR1'
+  MailRelayInternalSubnetCId2:
+    Value: !GetAtt EPZMailRelayInternalSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayInternalSubnetCIDR2'
+
+  MailRelayExternalSubnetCId1:
+    Value: !GetAtt EPZMailRelayExternalSubnetCIDR1.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayExternalSubnetCIDR1'
+  MailRelayExternalSubnetCId2:
+    Value: !GetAtt EPZMailRelayInternalSubnetCIDR2.SubnetId
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayExternalSubnetCIDR2'
+
+# Route Table Exports
+  ProxyRouteTableId:
+    Value: !Ref ProxyRouteTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyRouteTable'
+  MailRelayExternalRouteTableId:
+    Value: !Ref MailRelayExternalRouteTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayExternalRouteTable'
+  MailRelayInternalRouteTableId:
+    Value: !Ref MailRelayInternalRouteTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayInternalRouteTable'
+  MailRelayMgmtRouteTableId:
+    Value: !Ref MailRelayMgmtRouteTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayMgmtRouteTable'
+
+  # Transit gateway Exports
+  TransitGatewayAttachmentId:
+    Value: !Ref TransitGatewayAttachment
+
+# Internet Gateway Exports
+  InternetGatewayId:
+    Value: !Ref IGW
+

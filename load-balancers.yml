@@ -1,0 +1,109 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Load Balancers for Skyhigh SWG and Cisco Mail Relay EC2 ASGs.'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+  ProjectName:
+    Type: String
+  Department:
+    Type: String
+  CyberVpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for Load Balancers
+  ProxyNLBSubnetId1:
+    Type: String
+    Description: Proxy NLB V4 Private Subnets
+  ProxyNLBSubnetId2:
+    Type: String
+    Description: Proxy NLB V4 Private Subnets
+
+Resources:
+  SkyhighNLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-nlb'
+      Type: network
+      Scheme: internal
+      Subnets:
+        - !Ref ProxyNLBSubnetId1
+        - !Ref ProxyNLBSubnetId2
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-nlb'
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Department
+          Value: !Ref Department
+
+  SkyhighTG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-tg'
+      Port: 3128
+      Protocol: TCP
+      TargetType: instance
+      VpcId: !Ref CyberVpcId
+      HealthCheckProtocol: TCP
+      HealthCheckPort: 3128
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-tg'
+
+  # MailRelayNLB:
+  #   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  #   Properties:
+  #     Name: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
+  #     Type: network
+  #     Scheme: internet-facing
+  #     IpAddressType: dualstack
+  #     Subnets:
+  #       - !Ref MailRelayExternalSubnetCIDR1
+  #       - !Ref MailRelayExternalSubnetCIDR2
+  #     Tags:
+  #     - Key: Name
+  #       Value: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
+  #     - Key: Environment
+  #       Value: !Ref EnvironmentName
+  #     - Key: Project
+  #       Value: !Ref ProjectName
+  #     - Key: Department
+  #       Value: !Ref Department
+
+  MailRelayTG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-tg'
+      Port: 25
+      Protocol: TCP
+      TargetType: instance
+      VpcId: !Ref CyberVpcId
+      HealthCheckProtocol: TCP
+      HealthCheckPort: 25
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-tg'
+
+Outputs:
+  SkyhighNLB:
+    Value: !Ref SkyhighNLB
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-SkyhighNLB'
+
+  SkyhighTargetGroup:
+    Value: !Ref SkyhighTG
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-SkyhighTG'
+
+  # MailRelayNLB:
+  #   Value: !Ref MailRelayNLB
+  #   Export:
+  #     Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayNLB'
+
+  MailRelayTargetGroup:
+    Value: !Ref MailRelayTG
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayTG'

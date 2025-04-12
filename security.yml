@@ -1,0 +1,73 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Security Groups for Skyhigh SWG and Cisco Mail Relay EC2 instances.'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+  ProjectName:
+    Type: String
+  Department:
+    Type: String
+  ServicePrincipal:
+    Type: String
+    Description: Service principal for IAM roles
+  CyberVpcId:
+    Type: String
+    Description: VPC ID for Cyber VPC Security Groups
+
+Resources:
+  ProxySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow proxy port TCP:3128
+      VpcId: !Ref CyberVpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3128
+        ToPort: 3128
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-sg'
+      - Key: Environment
+        Value: !Ref EnvironmentName
+      - Key: Project
+        Value: !Ref ProjectName
+      - Key: Department
+        Value: !Ref Department
+
+  MailRelaySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Cisco Mail Relay traffic
+      VpcId: !Ref CyberVpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-sg'
+      - Key: Environment
+        Value: !Ref EnvironmentName
+      - Key: Project
+        Value: !Ref ProjectName
+      - Key: Department
+        Value: !Ref Department
+
+Outputs:
+  ProxySecurityGroup:
+    Value: !Ref ProxySecurityGroup
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ProxySecurityGroup'
+
+  MailRelaySecurityGroup:
+    Value: !Ref MailRelaySecurityGroup
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelaySecurityGroup'

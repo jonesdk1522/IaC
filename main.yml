@@ -1,0 +1,439 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main stack to orchestrate networking, security, compute, load balancers, and EIP assignment.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: "Environment Configuration"
+      Parameters:
+      - EnvironmentName
+      - ProjectName
+      - Department
+    - Label:
+        default: "AWS Region Configuration"
+      Parameters:
+      - Region
+    - Label:
+        default: "Cyber VPC"
+      Parameters:
+      - CyberVPCCIDR
+      - CyberVPCV6CIDR
+    - Label:
+        default: "Cyber VPC TGW Att. Subnets"
+      Parameters:
+      - TGWPrivateSubnetCIDR1
+      - TGWPrivateSubnetCIDR2
+      - TGWSubnetV6CIDR1
+      - TGWSubnetV6CIDR2
+    - Label:
+        default: "Proxy NLB Configuration" #Need to fix --Add an additional NLB for the Mail Relays. This means you need v4 and 6 spacing.
+      Parameters:
+      - ProxyNLBPrivateSubnetCIDR1
+      - ProxyNLBPrivateSubnetCIDR2
+      - ProxyNLBSubnetV6CIDR1
+      - ProxyNLBSubnetV6CIDR2
+    - Label:
+        default: "Proxy Sever Subnets"
+      Parameters:
+      - ProxyPrivateSubnetCIDR1
+      - ProxyPrivateSubnetCIDR2
+      - ProxySubnetV6CIDR1
+      - ProxySubnetV6CIDR2
+    - Label:
+        default: "Mail Relay Subnets"
+      Parameters:
+      - MailRelayMgmtSubnetCIDR1
+      - MailRelayMgmtSubnetCIDR2
+      - MailRelayInternalSubnetCIDR1
+      - MailRelayInternalSubnetCIDR2
+      - MailRelayExternalSubnetCIDR1
+      - MailRelayExternalSubnetCIDR2
+      - MailRelayMgmtSubnetV6CIDR1
+      - MailRelayMgmtSubnetV6CIDR2
+      - MailRelayInternalSubnetV6CIDR1
+      - MailRelayInternalSubnetV6CIDR2
+      - MailRelayExternalSubnetV6CIDR1
+      - MailRelayExternalSubnetV6CIDR2
+    - Label:
+        default: "IPam Pool Id"
+      Parameters:
+      - Ipv6IPAMPoolId
+    - Label:
+        default: "Transit Gateway Configuration"
+      Parameters:
+      - TransitGatewayId
+    - Label:
+        default: "Proxy Compute Configuration"
+      Parameters:
+      - ProxyAMI
+      - ProxyInstanceType
+      - KeyName
+    - Label:
+        default: "Mail Relay Compute Configuration"
+      Parameters:
+      - MailRelayAMI
+      - MailRelayInstanceType
+      - KeyName
+    - label:
+        default: "Other"
+      Parameters:
+      - S3BucketName
+      - S3ObjectName
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: Prod
+  ProjectName:
+    Type: String
+    Default: SkyHigh
+  Department:
+    Type: String
+    Default: Cyber
+
+  Region:
+    Type: String
+    AllowedValues: [ us-gov-east-1, us-gov-west-1 ]
+    Default: 'us-gov-west-1'
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+  ProxyAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /prod/sky-high/ec2/ami
+    Description: AMI ID from SSM Parameter Store
+  MailRelayAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /prod/cisco-mail-relay/ec2/ami
+    Description: AMI ID from SSM Parameter Store
+  ProxyInstanceType:
+    Type: String
+    AllowedValues:
+    - t3.micro
+    - t3.small
+    - t3.medium
+    - t3.large
+    - t3.xlarge
+    - t3.2xlarge
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m5.large
+    - m5.xlarge
+    - m5.2xlarge
+    Default: m5.2xlarge
+    Description: Instance type for Proxy servers
+  MailRelayInstanceType:
+    Type: String
+    AllowedValues:
+    - t3.micro
+    - t3.small
+    - t3.medium
+    - t3.large
+    - t3.xlarge
+    - t3.2xlarge
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m5.large
+    - m5.xlarge
+    - m5.2xlarge
+    - c4.4xlarge
+    - c5a.4xlarge
+    Default: c4.4xlarge
+    Description: Instance type for Mail Relay servers
+
+  # Transit Gateway Configuration
+  TransitGatewayId:
+    Type: String
+    Default: tgw-053c725b3be7c5234
+    Description: Existing Transit Gateway ID to attach the Mail Relay VPC
+
+  # Cyber Relay VPC (New VPC) parameters
+  # V4 IP Address Space
+  CyberVPCCIDR:
+    Type: String
+    Default: 10.148.28.0/22
+    Description: V4 CIDR block for new Cyber Relay VPC (e.g. 10.148.28.0/22)
+
+  # V6 IP Address Space
+  CyberVPCV6CIDR:
+    Type: String
+    Default: 2610:30:e000:700::/56
+    Description: V4 CIDR block for new Cyber Relay VPC (e.g. 2610:30:e000:700::/56)
+
+# Transit Gateway parameters
+# V4 IP Address Space
+  TGWPrivateSubnetCIDR1:
+    Type: String
+    Default: 10.148.28.0/28
+    Description: V4 CIDR blocks for TGW Att. private subnets (e.g. 10.148.28.0/28)
+  TGWPrivateSubnetCIDR2:
+    Type: String
+    Default: 10.148.28.16/28
+    Description: V4 CIDR blocks for TGW Att. private subnets (e.g. 10.148.28.16/28)
+
+  # V4 IP Address Space
+  TGWSubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:700::/64
+    Description: CIDR blocks for Mail Relay public subnets (e.g. 2610:30:e000:700::/64)
+  TGWSubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:701::/64
+    Description: CIDR blocks for Mail Relay public subnets (e.g. 2610:30:e000:701::/64)
+
+  # Proxy NLB parameters
+  # V4 IP Address Space
+  ProxyNLBPrivateSubnetCIDR1:
+    Type: String
+    Default: 10.148.28.32/28
+    Description: V4 CIDR blocks for Proxy NLB private subnets (e.g. 10.148.28.32/28)
+  ProxyNLBPrivateSubnetCIDR2:
+    Type: String
+    Default: 10.148.28.48/28
+    Description: V4 CIDR blocks for Proxy NLB private subnets (e.g. 10.148.28.48/28)
+
+  # V6 IP Address Space
+  ProxyNLBSubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:702::/64
+    Description: V6 CIDR blocks for Proxy NLB private subnets (e.g. 2610:30:e000:702::/64)
+  ProxyNLBSubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:703::/64
+    Description: V6 CIDR blocks for Proxy NLB private subnets (e.g. 2610:30:e000:703::/64)
+
+  # Proxy Servers parameters
+  # V4 IP Address Space
+  ProxyPrivateSubnetCIDR1:
+    Type: String
+    Default: 10.148.28.64/27
+    Description: V4 CIDR blocks for Proxy servers private subnets (e.g. 10.148.28.64/27)
+  ProxyPrivateSubnetCIDR2:
+    Type: String
+    Default: 10.148.28.96/28
+    Description: V4 CIDR blocks for Proxy servers private subnets (e.g. 10.148.28.96/27)
+
+  # V6 IP Address Space
+  ProxySubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:704::/64
+    Description: V6 CIDR blocks for Proxy servers private subnets (e.g. 2610:30:e000:704::/64)
+  ProxySubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:705::/64
+    Description: V6 CIDR blocks for Proxy servers private subnets (e.g. 2610:30:e000:705::/64)
+
+  # Mail Relay parameters
+  # V4 IP Address Space
+  MailRelayMgmtSubnetCIDR1:
+    Type: String
+    Default: 10.148.29.0/27
+    Description: V4 CIDR blocks for Mail Relay Mgmt subnets (e.g. 10.148.29.0/27)
+  MailRelayMgmtSubnetCIDR2:
+    Type: String
+    Default: 10.148.29.32/27
+    Description: V4 CIDR blocks for Mail Relay Mgmt subnets (e.g. 10.148.29.32/27)
+  MailRelayInternalSubnetCIDR1:
+    Type: String
+    Default: 10.148.29.64/27
+    Description: V4 CIDR blocks for Mail Relay Internal subnets (e.g. 10.148.29.64/27)
+  MailRelayInternalSubnetCIDR2:
+    Type: String
+    Default: 10.148.29.96/27
+    Description: V4 CIDR blocks for Mail Relay Internal subnets (e.g. 10.148.29.96/27)
+  MailRelayExternalSubnetCIDR1:
+    Type: String
+    Default: 10.148.29.128/27
+    Description: V4 CIDR blocks for Mail Relay External subnets (e.g. 10.148.29.128/27)
+  MailRelayExternalSubnetCIDR2:
+    Type: String
+    Default: 10.148.29.160/27
+    Description: V4 CIDR blocks for Mail Relay External subnets (e.g. 10.148.29.160/27)
+
+  # V6 IP Address Space
+  MailRelayMgmtSubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:706::/64
+    Description: V6 CIDR blocks for Mail Relay Mgmt subnets (e.g. 2610:30:e000:706::/64)
+  MailRelayMgmtSubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:707::/64
+    Description: V6 CIDR blocks for Mail Relay Mgmt subnets (e.g. 2610:30:e000:707::/64)
+  MailRelayInternalSubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:708::/64
+    Description: V6 CIDR blocks for Mail Relay Internal subnets (e.g. 2610:30:e000:708::/64)
+  MailRelayInternalSubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:709::/64
+    Description: V6 CIDR blocks for Mail Relay Internal subnets (e.g. 2610:30:e000:709::/64)
+  MailRelayExternalSubnetV6CIDR1:
+    Type: String
+    Default: 2610:30:e000:70a::/64
+    Description: V6 CIDR blocks for Mail Relay External subnets (e.g. 2610:30:e000:70a::/64)
+  MailRelayExternalSubnetV6CIDR2:
+    Type: String
+    Default: 2610:30:e000:70b::/64
+    Description: V6 CIDR blocks for Mail Relay External subnets (e.g. 2610:30:e000:70b::/64)
+
+  Ipv6IPAMPoolId:
+    Type: String
+    Default: ipam-pool-0ab21c7707046fae1
+
+  S3BucketName:
+    Type: String
+    Default: csb-global-env-account-setup-mgmt
+
+  S3ObjectName:
+    Type: String
+    Default: cloudformation/SkyHigh/assign-ipv6-custom-resource.zip
+
+Mappings:
+  RegionConfig:
+    us-gov-west-1:
+      SSMPrefix: '/aws-gov/service/ami-amazon-linux-latest'
+      ServicePrincipal: 'ec2.amazonaws.com'
+    us-gov-east-1:
+      SSMPrefix: '/aws-gov/service/ami-amazon-linux-latest'
+      ServicePrincipal: 'ec2.amazonaws.com'
+
+Resources:
+  NetworkingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/networking.yml
+      Parameters:
+        CyberVPCCIDR: !Ref CyberVPCCIDR
+        CyberVPCV6CIDR: !Ref CyberVPCV6CIDR
+        Ipv6IPAMPoolId: !Ref Ipv6IPAMPoolId
+        TGWPrivateSubnetCIDR1: !Ref TGWPrivateSubnetCIDR1
+        TGWPrivateSubnetCIDR2: !Ref TGWPrivateSubnetCIDR2
+        TGWSubnetV6CIDR1: !Ref TGWSubnetV6CIDR1
+        TGWSubnetV6CIDR2: !Ref TGWSubnetV6CIDR2
+        ProxyNLBPrivateSubnetCIDR1: !Ref ProxyNLBPrivateSubnetCIDR1
+        ProxyNLBPrivateSubnetCIDR2: !Ref ProxyNLBPrivateSubnetCIDR2
+        ProxyNLBSubnetV6CIDR1: !Ref ProxyNLBSubnetV6CIDR1
+        ProxyNLBSubnetV6CIDR2: !Ref ProxyNLBSubnetV6CIDR2
+        ProxyPrivateSubnetCIDR1: !Ref ProxyPrivateSubnetCIDR1
+        ProxyPrivateSubnetCIDR2: !Ref ProxyPrivateSubnetCIDR2
+        ProxySubnetV6CIDR1: !Ref ProxySubnetV6CIDR1
+        ProxySubnetV6CIDR2: !Ref ProxySubnetV6CIDR2
+        MailRelayExternalSubnetCIDR1: !Ref MailRelayExternalSubnetCIDR1
+        MailRelayExternalSubnetCIDR2: !Ref MailRelayExternalSubnetCIDR2
+        MailRelayInternalSubnetCIDR1: !Ref MailRelayInternalSubnetCIDR1
+        MailRelayInternalSubnetCIDR2: !Ref MailRelayInternalSubnetCIDR2
+        MailRelayMgmtSubnetCIDR1: !Ref MailRelayMgmtSubnetCIDR1
+        MailRelayMgmtSubnetCIDR2: !Ref MailRelayMgmtSubnetCIDR2
+        MailRelayExternalSubnetV6CIDR1: !Ref MailRelayExternalSubnetV6CIDR1
+        MailRelayExternalSubnetV6CIDR2: !Ref MailRelayExternalSubnetV6CIDR2
+        MailRelayInternalSubnetV6CIDR1: !Ref MailRelayInternalSubnetV6CIDR1
+        MailRelayInternalSubnetV6CIDR2: !Ref MailRelayInternalSubnetV6CIDR2
+        MailRelayMgmtSubnetV6CIDR1: !Ref MailRelayMgmtSubnetV6CIDR1
+        MailRelayMgmtSubnetV6CIDR2: !Ref MailRelayMgmtSubnetV6CIDR2
+        TransitGatewayId: !Ref TransitGatewayId
+        EnvironmentName: !Sub ${EnvironmentName}-mail-relay
+        ProjectName: !Ref ProjectName
+        Department: !Ref Department
+
+  LambdaIpv6AssignmentStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/lambda.yml
+      Parameters:
+        CyberVpcId: !GetAtt NetworkingStack.Outputs.CyberVPCId
+        TGWSubnetId1: !GetAtt NetworkingStack.Outputs.TGWSubnetId1
+        TGWSubnetId2: !GetAtt NetworkingStack.Outputs.TGWSubnetId2
+        ProxyNLBSubnetId1: !GetAtt NetworkingStack.Outputs.ProxyNLBSubnetId1
+        ProxyNLBSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyNLBSubnetId2
+        ProxyPrivateSubnetId1: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId1
+        ProxyPrivateSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId2
+        MailRelayMgmtSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCId1
+        MailRelayMgmtSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCId2
+        MailRelayInternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCId1
+        MailRelayInternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCId2
+        MailRelayExternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCId1
+        MailRelayExternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCId2
+        LambdaCodeBucket: !Ref S3BucketName
+        LambdaCodeKey: !Ref S3ObjectName
+        EnvironmentName: !Ref EnvironmentName
+        ProjectName: !Ref ProjectName
+        Department: !Ref Department
+
+  SecurityStack: ## Good ##
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/security.yml
+      Parameters:
+        ServicePrincipal: !FindInMap [ RegionConfig, !Ref Region, ServicePrincipal ]
+        CyberVpcId: !GetAtt NetworkingStack.Outputs.CyberVPCId
+        EnvironmentName: !Ref EnvironmentName
+        ProjectName: !Ref ProjectName
+        Department: !Ref Department
+
+  LoadBalancerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/load-balancers.yml
+      Parameters:
+        CyberVpcId: !GetAtt NetworkingStack.Outputs.CyberVPCId
+        ProxyNLBSubnetId1: !GetAtt NetworkingStack.Outputs.ProxyNLBSubnetId1
+        ProxyNLBSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyNLBSubnetId2
+        #TODO --> Need to exportMail Relay NLB params
+        EnvironmentName: !Ref EnvironmentName
+        ProjectName: !Ref ProjectName
+        Department: !Ref Department
+
+  ComputeStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/compute.yml
+      Parameters:
+        KeyName: !Ref KeyName
+        ProxyAMI: !Ref ProxyAMI
+        MailRelayAMI: !Ref MailRelayAMI
+        ProxyInstanceType: !Ref ProxyInstanceType
+        MailRelayInstanceType: !Ref MailRelayInstanceType
+        ProxyPrivateSubnetCIDR1: !Ref ProxyPrivateSubnetCIDR1
+        ProxyPrivateSubnetCIDR2: !Ref ProxyPrivateSubnetCIDR2
+        ProxySubnetV6CIDR1: !Ref ProxySubnetV6CIDR1
+        ProxySubnetV6CIDR2: !Ref ProxySubnetV6CIDR2
+        MailRelayMgmtSubnetCIDR1: !Ref MailRelayMgmtSubnetCIDR1
+        MailRelayMgmtSubnetCIDR2: !Ref MailRelayMgmtSubnetCIDR2
+        MailRelayInternalSubnetCIDR1: !Ref MailRelayInternalSubnetCIDR1
+        MailRelayInternalSubnetCIDR2: !Ref MailRelayInternalSubnetCIDR2
+        MailRelayExternalSubnetCIDR1: !Ref MailRelayExternalSubnetCIDR1
+        MailRelayExternalSubnetCIDR2: !Ref MailRelayExternalSubnetCIDR2
+        MailRelayMgmtSubnetV6CIDR1: !Ref MailRelayMgmtSubnetV6CIDR1
+        MailRelayMgmtSubnetV6CIDR2: !Ref MailRelayMgmtSubnetV6CIDR2
+        MailRelayInternalSubnetV6CIDR1: !Ref MailRelayInternalSubnetV6CIDR1
+        MailRelayInternalSubnetV6CIDR2: !Ref MailRelayInternalSubnetV6CIDR2
+        MailRelayExternalSubnetV6CIDR1: !Ref MailRelayExternalSubnetV6CIDR1
+        MailRelayExternalSubnetV6CIDR2: !Ref MailRelayExternalSubnetV6CIDR2
+        # ProxyPrivateSubnetCIDR1: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetCIDR1
+        # ProxyPrivateSubnetCIDR2: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetCIDR2
+        # ProxySubnetV6CIDR1: !GetAtt NetworkingStack.Outputs.ProxySubnetV6CIDR1
+        # ProxySubnetV6CIDR2: !GetAtt NetworkingStack.Outputs.ProxySubnetV6CIDR2
+        # MailRelayMgmtSubnetCIDR1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCIDR1
+        # MailRelayMgmtSubnetCIDR2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCIDR2
+        # MailRelayInternalSubnetCIDR1: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCIDR1
+        # MailRelayInternalSubnetCIDR2: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCIDR2
+        # MailRelayExternalSubnetCIDR1: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCIDR1
+        # MailRelayExternalSubnetCIDR2: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCIDR2
+        # MailRelayMgmtSubnetV6CIDR1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetV6CIDR1
+        # MailRelayMgmtSubnetV6CIDR2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetV6CIDR2
+        # MailRelayInternalSubnetV6CIDR1: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetV6CIDR1
+        # MailRelayInternalSubnetV6CIDR2: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetV6CIDR2
+        # MailRelayExternalSubnetV6CIDR1: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetV6CIDR1
+        # MailRelayExternalSubnetV6CIDR2: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetV6CIDR2
+        ProxyTargetGroupARN: !GetAtt LoadBalancerStack.Outputs.SkyhighTargetGroup
+        MailRelayTargetGroupARN: !GetAtt LoadBalancerStack.Outputs.MailRelayTargetGroup
+        ProxySecurityGroup: !GetAtt SecurityStack.Outputs.ProxySecurityGroup
+        MailRelaySecurityGroup: !GetAtt SecurityStack.Outputs.MailRelaySecurityGroup
+        EnvironmentName: !Ref EnvironmentName
+        ProjectName: !Ref ProjectName
+        Department: !Ref Department

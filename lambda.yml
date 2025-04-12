@@ -2,32 +2,41 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Assign IPv6 CIDRs to subnets using Lambda and a custom resource
 
 Parameters:
-  BaseIpv6Block:
+  EnvironmentName:
     Type: String
-    Description: Base IPv6 /56 block for subnet allocations (e.g., 2600:abcd:1234:1000::/56)
-  Subnet1Id:
+  ProjectName:
     Type: String
-  Subnet2Id:
+  Department:
     Type: String
-  Subnet3Id:
+  CyberVpcId:
     Type: String
-  Subnet4Id:
+  TGWSubnetId1:
     Type: String
-  Subnet5Id:
+  TGWSubnetId2:
     Type: String
-  Subnet6Id:
+  ProxyNLBSubnetId1:
     Type: String
-  Subnet7Id:
+  ProxyNLBSubnetId2:
     Type: String
-  Subnet8Id:
+  ProxyPrivateSubnetId1:
     Type: String
-  Subnet9Id:
+  ProxyPrivateSubnetId2:
     Type: String
-  Subnet10Id:
+  MailRelayMgmtSubnetId1:
     Type: String
-  Subnet11Id:
+  MailRelayMgmtSubnetId2:
     Type: String
-  Subnet12Id:
+  MailRelayInternalSubnetId1:
+    Type: String
+  MailRelayInternalSubnetId2:
+    Type: String
+  MailRelayExternalSubnetId1:
+    Type: String
+  MailRelayExternalSubnetId2:
+    Type: String
+  LambdaCodeBucket:
+    Type: String
+  LambdaCodeKey:
     Type: String
 
 Resources:
@@ -50,6 +59,12 @@ Resources:
           - Effect: Allow
             Action:
             - ec2:AssociateSubnetCidrBlock
+            - ec2:DescribeVpcs
+            - ec2:DescribeSubnets
+            - ec2:AssociateVpcCidrBlock
+            - ec2:DisassociateSubnetCidrBlock
+            - ec2:DescribeVpcAttribute
+            - ec2:ModifySubnetAttribute
             Resource: "*"
           - Effect: Allow
             Action:
@@ -67,24 +82,24 @@ Resources:
       Runtime: nodejs18.x
       Timeout: 60
       Code:
-        S3Bucket: your-s3-bucket-name
-        S3Key: assign-ipv6-custom-resource.zip
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
 
   AssignIpv6CustomResource:
     Type: Custom::AssignIpv6
     Properties:
       ServiceToken: !GetAtt AssignIpv6Function.Arn
-      BaseIpv6Block: !Ref BaseIpv6Block
+      VpcId: !Ref CyberVpcId
       SubnetIds:
-      - !Ref Subnet1Id
-      - !Ref Subnet2Id
-      - !Ref Subnet3Id
-      - !Ref Subnet4Id
-      - !Ref Subnet5Id
-      - !Ref Subnet6Id
-      - !Ref Subnet7Id
-      - !Ref Subnet8Id
-      - !Ref Subnet9Id
-      - !Ref Subnet10Id
-      - !Ref Subnet11Id
-      - !Ref Subnet12Id
+        - !Ref TGWSubnetId1
+        - !Ref TGWSubnetId2
+        - !Ref ProxyNLBSubnetId1
+        - !Ref ProxyNLBSubnetId2
+        - !Ref ProxyPrivateSubnetId1
+        - !Ref ProxyPrivateSubnetId2
+        - !Ref MailRelayMgmtSubnetId1
+        - !Ref MailRelayMgmtSubnetId2
+        - !Ref MailRelayInternalSubnetId1
+        - !Ref MailRelayInternalSubnetId2
+        - !Ref MailRelayExternalSubnetId1
+        - !Ref MailRelayExternalSubnetId2

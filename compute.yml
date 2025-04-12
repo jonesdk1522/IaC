@@ -1,0 +1,234 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Compute stack: Skyhigh SWG and Cisco Mail Relay ASGs with tagging, NLB registration, and EIP-ready launch templates.'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+  ProjectName:
+    Type: String
+  Department:
+    Type: String
+  KeyName:
+    Type: String
+  ProxyAMI:
+    Type: String
+  MailRelayAMI:
+    Type: String
+  ProxyInstanceType:
+    Type: String
+    AllowedValues:
+    - t3.medium
+    - t3.large
+    - m4.2xlarge
+    - m5.2xlarge
+    Default: m5.2xlarge
+    Description: Instance type for Proxy servers
+  MailRelayInstanceType:
+    Type: String
+    AllowedValues:
+    - t3.medium
+    - t3.large
+    - m5.large
+    - c4.4xlarge
+    - c5a.4xlarge
+    Default: c5a.4xlarge
+    Description: Instance type for Mail Rely servers
+
+  ProxyTargetGroupARN:
+    Type: String
+  MailRelayTargetGroupARN:
+    Type: String
+  ProxySecurityGroup:
+    Type: String
+  MailRelaySecurityGroup:
+    Type: String
+
+  # Proxy parameters
+  # V4 Subnets
+  ProxyPrivateSubnetId1:
+    Type: String
+  ProxyPrivateSubnetId2:
+    Type: String
+
+  # Mail Relay parameters
+  MailRelayMgmtSubnetId1:
+    Type: String
+  MailRelayMgmtSubnetId2:
+    Type: String
+
+Resources:
+  ProxyASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: ProxyASG
+      VPCZoneIdentifier:
+        - !Ref ProxyPrivateSubnetId1
+        - !Ref ProxyPrivateSubnetId2
+      LaunchTemplate:
+        LaunchTemplateId: !Ref ProxyLaunchTemplate
+        Version: !GetAtt ProxyLaunchTemplate.LatestVersionNumber
+      MinSize: 4
+      MaxSize: 6
+      DesiredCapacity: 4
+      TargetGroupARNs:
+      - !Ref ProxyTargetGroupARN
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-instance'
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: !Ref EnvironmentName
+        PropagateAtLaunch: true
+      - Key: Project
+        Value: !Ref ProjectName
+        PropagateAtLaunch: true
+      - Key: Department
+        Value: !Ref Department
+        PropagateAtLaunch: true
+      TerminationPolicies:
+        - OldestInstance
+
+  ProxyLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${ProjectName}-${EnvironmentName}-proxy-lt'
+      LaunchTemplateData:
+        InstanceType: !Ref ProxyInstanceType
+        ImageId: !Ref ProxyAMI
+        KeyName: !Ref KeyName
+        NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          Groups:
+          - !Ref ProxySecurityGroup
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 120
+              VolumeType: gp3
+              DeleteOnTermination: true
+              Encrypted: true
+        MetadataOptions:
+          HttpEndpoint: enabled
+          HttpTokens: required
+        Monitoring:
+          Enabled: true
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value: !Sub '${ProjectName}-${EnvironmentName}-proxy-instance'
+          - Key: Environment
+            Value: !Ref EnvironmentName
+          - Key: Project
+            Value: !Ref ProjectName
+          - Key: Department
+            Value: !Ref Department
+        UserData:
+          Fn::Base64: |
+           #cloud-config
+            users:
+              - default
+              - name: init-builder
+                gecos: SA FireCall Account
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: localadmins
+                lock_passwd: true
+                ssh_authorized_keys:
+                  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2hIJDwBDtF33+B0+Jnmel/lgF3+5V19GNzfIOnzI/TBpkhlEd3Gc/qjwpNmEF8WmGI52pOxGY/ZdB01EUXxS7SLbbXGgNoNlQzio3jUD0G/s2FGoh9OV9q9+AEGVr1ddqx9Or5Cm1qyvsH4KPPlWH3MB3C9++3OSp56DnEitf/P9QH6sFvkAPWPGwjWDiqfJPsfnklTW+LmKhbApfDGrBHhW5FA5YNmPqZXtpb79XWju/9V4GWzce6QLXk8DCzBFwTA3VvU/fj6KCAPIN/KpwEKDlE0B6D6PX0nKQ4k0hJr5QGnoVi90JRayaL+VdKDFwwHi4JrrhFBueZrLBAzDD csircx00@vl2smtbcicansd1.lxcst.csirc.irs.gov
+            groups:
+              - localadmins: [root,init-builder]
+            network:
+              version: 1
+              config:
+              - type: physical
+                name: ens3
+                subnets:
+                  - type: dhcp
+
+  MailRelayASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: MailRelayLaunchTemplate
+    Properties:
+      AutoScalingGroupName: MailRelayASG
+      VPCZoneIdentifier:
+        - !Ref MailRelayMgmtSubnetId1
+        - !Ref MailRelayMgmtSubnetId2
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MailRelayLaunchTemplate
+        Version: !GetAtt MailRelayLaunchTemplate.LatestVersionNumber
+      MinSize: 6
+      MaxSize: 8
+      DesiredCapacity: 6
+      TargetGroupARNs:
+      - !Ref MailRelayTargetGroupARN
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-instance'
+        PropagateAtLaunch: true
+      - Key: Environment
+        Value: !Ref EnvironmentName
+        PropagateAtLaunch: true
+      - Key: Project
+        Value: !Ref ProjectName
+        PropagateAtLaunch: true
+      - Key: Department
+        Value: !Ref Department
+        PropagateAtLaunch: true
+      TerminationPolicies:
+        - OldestInstance
+
+  MailRelayLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-lt'
+      LaunchTemplateData:
+        InstanceType: !Ref MailRelayInstanceType
+        ImageId: !Ref MailRelayAMI
+        KeyName: !Ref KeyName
+        NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          Groups:
+          - !Ref MailRelaySecurityGroup
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 750
+              VolumeType: gp3
+              DeleteOnTermination: true
+              Encrypted: true
+        MetadataOptions:
+          HttpEndpoint: enabled
+          HttpTokens: required
+        Monitoring:
+          Enabled: true
+        TagSpecifications:
+        - ResourceType: instance
+          Tags:
+          - Key: Name
+            Value: !Sub '${ProjectName}-${EnvironmentName}-mail-relay-instance'
+          - Key: Environment
+            Value: !Ref EnvironmentName
+          - Key: Project
+            Value: !Ref ProjectName
+          - Key: Department
+            Value: !Ref Department
+
+Outputs:
+  ProxyAutoScalingGroupName:
+    Description: Name of Proxy ASG
+    Value: !Ref ProxyASG
+    Export:
+      Name: !Sub "${AWS::StackName}-ProxyASGName"
+  MailRelayAutoScalingGroupName:
+    Description: Name of Mail Relay ASG
+    Value: !Ref MailRelayASG
+    Export:
+      Name: !Sub "${AWS::StackName}-MailRelayASGName"
+  # MailRelayDesiredCapacity:
+  #   Description: Desired capacity of Mail Relay ASG
+  #   Value: !GetAtt MailRelayASG.DesiredCapacity
+  #   Export:
+  #     Name: !Sub "${AWS::StackName}-MailRelayDesiredCapacity"
