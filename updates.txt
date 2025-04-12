@@ -1,2 +1,207 @@
-AKIAYYWFOFADTKLHNIH3
-0jfwKInGRUVjnW+igoTsYhex1WM298iM70gFwsdv
+'use strict';
+
+const https = require('https');
+const url = require('url');
+const AWS = require('aws-sdk');
+
+// Configure AWS region
+AWS.config.update({ region: 'us-gov-west-1' });
+const ec2 = new AWS.EC2();
+
+function sendResponse(event, context, responseStatus, responseData) {
+  const responseBody = JSON.stringify({
+    Status: responseStatus,
+    Reason: `See the details in CloudWatch Log Stream: ${context.logStreamName}`,
+    PhysicalResourceId: context.logStreamName,
+    StackId: event.StackId,
+    RequestId: event.RequestId,
+    LogicalResourceId: event.LogicalResourceId,
+    Data: responseData,
+  });
+
+  const parsedUrl = url.parse(event.ResponseURL);
+  const options = {
+    hostname: parsedUrl.hostname,
+    port: 443,
+    path: parsedUrl.path,
+    method: 'PUT',
+    headers: {
+      'Content-Type': '',
+      'Content-Length': responseBody.length,
+    },
+  };
+
+  const req = https.request(options, res => {
+    console.log(`Status code: ${res.statusCode}`);
+  });
+
+  req.on('error', err => {
+    console.error('sendResponse Error:', err);
+  });
+
+  req.write(responseBody);
+  req.end();
+}
+
+function ipv6ToBigInt(ipv6) {
+  try {
+    console.log('Input IPv6:', ipv6);
+    // Split the address into its parts
+    const [address] = ipv6.split('/');
+    const parts = address.split(':');
+    
+    // Fill in zero compression (::)
+    const doubleColonIndex = parts.indexOf('');
+    if (doubleColonIndex !== -1) {
+      const zerosCount = 8 - (parts.length - 1);
+      const zeros = Array(zerosCount).fill('0');
+      parts.splice(doubleColonIndex, 1, ...zeros);
+    }
+    
+    // Pad each part to 4 characters
+    const normalizedParts = parts.map(part => part.padStart(4, '0'));
+    const hexString = normalizedParts.join('');
+    console.log('Hex string:', hexString);
+    
+    return BigInt(`0x${hexString}`);
+  } catch (error) {
+    console.error('Error in ipv6ToBigInt:', error);
+    throw error;
+  }
+}
+
+function bigIntToIpv6(value) {
+  try {
+    console.log('Input value:', value.toString());
+    // Convert to hex and pad to 32 characters
+    let hex = value.toString(16);
+    while (hex.length < 32) {
+      hex = '0' + hex;
+    }
+    
+    // Split into 4-character segments
+    const segments = [];
+    for (let i = 0; i < 32; i += 4) {
+      segments.push(hex.slice(i, i + 4));
+    }
+    
+    // Join with colons
+    let ipv6 = segments.join(':');
+    
+    // Compress longest run of zeros
+    const zeroRun = /:0(?::0)+/;
+    const match = ipv6.match(zeroRun);
+    if (match) {
+      ipv6 = ipv6.replace(match[0], '::');
+    }
+    
+    console.log('Output IPv6:', ipv6);
+    return ipv6;
+  } catch (error) {
+    console.error('Error in bigIntToIpv6:', {
+      input: value,
+      error: error.message
+    });
+    throw error;
+  }
+}
+
+function getSubnetIpv6Cidr(baseCidr, index, newPrefixLength = 64) {
+  const [baseAddr, basePrefixLength] = baseCidr.split('/');
+  const baseBigInt = ipv6ToBigInt(baseAddr);
+  
+  // Convert index to hex string (00-ff)
+  const hexIndex = index.toString(16).padStart(2, '0');
+  // Convert hex string to BigInt
+  const offset = BigInt(`0x${hexIndex}`) << BigInt(128 - newPrefixLength);
+  
+  const subnetAddrBigInt = baseBigInt + offset;
+  return `${bigIntToIpv6(subnetAddrBigInt)}/${newPrefixLength}`;
+}
+
+exports.handler = async (event, context) => {
+  try {
+    console.log('Received event:', JSON.stringify(event, null, 2));
+
+    // Handle DELETE requests immediately
+    if (event.RequestType === 'Delete') {
+      console.log('Delete request - sending immediate success response');
+      await sendResponse(event, context, 'SUCCESS', {
+        Message: 'Resource deletion initiated'
+      });
+      // Optionally perform cleanup after responding
+      try {
+        // Add any cleanup logic here
+        console.log('Cleanup completed');
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+        // Don't throw - we already sent success response
+      }
+      return;
+    }
+
+    // For CREATE and UPDATE, do the work first
+    if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+      const { SubnetIds, VpcId } = event.ResourceProperties;
+
+      // Need to get VPC Id
+      const vpcResponse = await ec2.describeVpcs({
+        VpcIds: [VpcId]
+      }).promise();
+
+      const vpc = vpcResponse.Vpcs[0];
+      const ipv6Association = vpc.Ipv6CidrBlockAssociationSet?.[0];
+
+      if (!ipv6Association?.ipv6CidrBlock) {
+        throw new Error ('VPC has no IPv6 CIDR assigned.');
+      }
+
+      const baseIpv6Block = ipv6Association.Ipv6CidrBlock;
+
+      // Get all subnet details first
+      const subnetsResponse = await ec2.describeSubnets({
+        SubnetIds: SubnetIds
+      }).promise();
+
+      for (let i = 0; i < SubnetIds.length; i++) {
+        const subnetId = SubnetIds[i];
+        const subnet = subnetsResponse.Subnets.find(s => s.SubnetId === subnetId);
+        
+        // Skip if subnet already has IPv6 CIDR
+        if (subnet.Ipv6CidrBlockAssociationSet && subnet.Ipv6CidrBlockAssociationSet.length > 0) {
+          console.log(`Subnet ${subnetId} already has IPv6 CIDR, skipping...`);
+          continue;
+        }
+
+        const cidr = getSubnetIpv6Cidr(baseIpv6Block, i);
+        console.log(`Assigning ${cidr} to ${subnetId}`);
+        await ec2.associateSubnetCidrBlock({
+          SubnetId: subnetId,
+          Ipv6CidrBlock: cidr,
+        }).promise();
+      }
+
+      // Send success response with the results
+      await sendResponse(event, context, 'SUCCESS', {
+        Message: `${event.RequestType} completed successfully`,
+        VpcId: event.ResourceProperties.VpcId,
+        SubnetIds: event.ResourceProperties.SubnetIds
+      });
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    await sendResponse(event, context, 'FAILED', {
+      Message: `Error: ${error.message}`,
+      StackTrace: error.stack
+    });
+  }
+
+  // Ensure the function completes
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ 
+      message: `${event.RequestType} operation completed` 
+    })
+  };
+};
