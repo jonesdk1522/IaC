@@ -107,16 +107,30 @@ function bigIntToIpv6(value) {
 }
 
 function getSubnetIpv6Cidr(baseCidr, index, newPrefixLength = 64) {
-  const [baseAddr, basePrefixLength] = baseCidr.split('/');
-  const baseBigInt = ipv6ToBigInt(baseAddr);
-  
-  // Convert index to hex string (00-ff)
-  const hexIndex = index.toString(16).padStart(2, '0');
-  // Convert hex string to BigInt
-  const offset = BigInt(`0x${hexIndex}`) << BigInt(128 - newPrefixLength);
-  
-  const subnetAddrBigInt = baseBigInt + offset;
-  return `${bigIntToIpv6(subnetAddrBigInt)}/${newPrefixLength}`;
+  try {
+    const [baseAddr, basePrefixLength] = baseCidr.split('/');
+    const baseBigInt = ipv6ToBigInt(baseAddr);
+    
+    // Convert decimal index to hex (00-ff)
+    const hexIndex = (0x800 + index).toString(16).slice(1);
+    console.log(`Converting index ${index} to hex: ${hexIndex}`);
+    
+    // Convert hex string to BigInt
+    const offset = BigInt(`0x${hexIndex}`) << BigInt(128 - newPrefixLength);
+    
+    const subnetAddrBigInt = baseBigInt + offset;
+    const result = `${bigIntToIpv6(subnetAddrBigInt)}/${newPrefixLength}`;
+    console.log(`Subnet index ${index} (hex: ${hexIndex}) -> CIDR: ${result}`);
+    
+    return result;
+  } catch (error) {
+    console.error('Error in getSubnetIpv6Cidr:', {
+      baseCidr,
+      index,
+      error: error.message
+    });
+    throw error;
+  }
 }
 
 exports.handler = async (event, context) => {
