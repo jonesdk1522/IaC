@@ -152,7 +152,7 @@ exports.handler = async (event, context) => {
       const vpc = vpcResponse.Vpcs[0];
       const ipv6Association = vpc.Ipv6CidrBlockAssociationSet?.[0];
 
-      if (!ipv6Association?.ipv6CidrBlock) {
+      if (!ipv6Association?.Ipv6CidrBlock) {
         throw new Error ('VPC has no IPv6 CIDR assigned.');
       }
 
@@ -169,10 +169,12 @@ exports.handler = async (event, context) => {
         
         // Skip if subnet already has IPv6 CIDR
         if (subnet.Ipv6CidrBlockAssociationSet && subnet.Ipv6CidrBlockAssociationSet.length > 0) {
-          console.log(`Subnet ${subnetId} already has IPv6 CIDR, skipping...`);
+          console.log(`Subnet ${subnetId} already has IPv6 CIDR -- ${subnet.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock}, skipping...`);
           continue;
         }
 
+        console.log(`Processing subnet index: ${i}`);
+        
         const cidr = getSubnetIpv6Cidr(baseIpv6Block, i);
         console.log(`Assigning ${cidr} to ${subnetId}`);
         await ec2.associateSubnetCidrBlock({
