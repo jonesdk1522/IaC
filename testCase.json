@@ -1,0 +1,24 @@
+{
+    "RequestType": "Create",
+    "ResponseURL": "http://pre-signed-S3-url-for-response",
+    "StackId": "test-stack-id",
+    "RequestId": "test-request-id",
+    "LogicalResourceId": "AssignIpv6CustomResource",
+    "ResourceProperties": {
+      "VpcId": "vpc-09701b90f1ceddb98",
+        "SubnetIds": [
+            "subnet-0886ffc00044f8725",
+            "subnet-01fd45dec9f3eccea",
+            "subnet-0273953766adba123",
+            "subnet-060043cfbb14bdd21",
+            "subnet-0b436c5d98c5ea7ff",
+            "subnet-02e49300eade7c7fb",
+            "subnet-0d31512a745ebfe03",
+            "subnet-03cc66d98d3dfbae0",
+            "subnet-091fd685ffbc83077",
+            "subnet-0207fd0510687e592",
+            "subnet-05f935d86157a1425",
+            "subnet-030cc155cb83219fd"
+        ]
+    }
+  }
