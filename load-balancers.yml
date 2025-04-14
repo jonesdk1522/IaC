@@ -56,15 +56,6 @@ Resources:
       LoadBalancerArn: !Ref SkyhighNLB
       Port: 3128
       Protocol: TCP
-      Tags:
-      - Key: Name
-        Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-listener'
-      - Key: Environment
-        Value: !Ref EnvironmentName
-      - Key: Project
-        Value: !Ref ProjectName
-      - Key: Department
-        Value: !Ref Department
 
   SkyhighTG:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -79,32 +70,33 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub '${ProjectName}-${EnvironmentName}-skyhigh-tg'
-        # MailRelayNLB:
-        #   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-        #   Properties:
-        #     Name: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
-        #     Type: network
-        #     Scheme: internet-facing
-        #     IpAddressType: dualstack
-        # LoadBalancerAttributes:
-        #   - deletion_protection.enabled: false
-        #   - load_balancing.cross_zone.enabled: true
-        #   - access_logs.s3.enabled: false
-        #   - access_logs.s3.bucket: !Ref LambdaCodeBucket
-        #   - connection_logs.s3.enabled: false
-        #   - connection_logs.s3.bucket: !Ref LambdaCodeBucket
-        #     Subnets:
-        #       - !Ref MailRelayExternalSubnetCIDR1
-        #       - !Ref MailRelayExternalSubnetCIDR2
-        #     Tags:
-        #     - Key: Name
-        #       Value: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
-        #     - Key: Environment
-        #       Value: !Ref EnvironmentName
-        #     - Key: Project
-        #       Value: !Ref ProjectName
-        #     - Key: Department
-        #       Value: !Ref Department
+
+# MailRelayNLB:
+#   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+#   Properties:
+#     Name: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
+#     Type: network
+#     Scheme: internet-facing
+#     IpAddressType: dualstack
+# LoadBalancerAttributes:
+#   - deletion_protection.enabled: false
+#   - load_balancing.cross_zone.enabled: true
+#   - access_logs.s3.enabled: false
+#   - access_logs.s3.bucket: !Ref LambdaCodeBucket
+#   - connection_logs.s3.enabled: false
+#   - connection_logs.s3.bucket: !Ref LambdaCodeBucket
+#     Subnets:
+#       - !Ref MailRelayExternalSubnetCIDR1
+#       - !Ref MailRelayExternalSubnetCIDR2
+#     Tags:
+#     - Key: Name
+#       Value: !Sub '${ProjectName}-${EnvironmentName}-mailrelay-nlb'
+#     - Key: Environment
+#       Value: !Ref EnvironmentName
+#     - Key: Project
+#       Value: !Ref ProjectName
+#     - Key: Department
+#       Value: !Ref Department
 
   MailRelayTG:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
