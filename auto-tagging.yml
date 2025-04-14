@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lambda to auto-tag EC2 instances with Name and AZ on launch
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EC2AutoTagLambdaRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EC2TaggingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateTags
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  EC2AutoTagLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: EC2AutoTagger
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 10
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require("aws-sdk");
+          const ec2 = new AWS.EC2();
+
+          exports.handler = async (event) => {
+            console.log("Event received:", JSON.stringify(event, null, 2));
+
+            const instanceId = event.detail?.EC2InstanceId;
+            const az = event.detail?.AvailabilityZone;
+
+            if (!instanceId || !az) {
+              console.error("Missing instance ID or AZ");
+              return;
+            }
+
+            const suffix = instanceId.slice(-8);
+            const shortAZ = az.slice(-2);
+
+            const params = {
+              Resources: [instanceId],
+              Tags: [
+                { Key: "Name", Value: `ec2-${suffix}` },
+                { Key: "AZ", Value: shortAZ }
+              ]
+            };
+
+            try {
+              await ec2.createTags(params).promise();
+              console.log(`Tagged ${instanceId} with ec2-${suffix} and AZ ${shortAZ}`);
+            } catch (err) {
+              console.error("Failed to tag instance:", err);
+            }
+          };
+
+  EC2LaunchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: TagEC2OnLaunch
+      Description: Trigger Lambda to tag EC2 instances when they enter 'running' state
+      EventPattern:
+        source:
+          - "aws.ec2"
+        detail-type:
+          - "EC2 Instance State-change Notification"
+        detail:
+          state:
+            - "running"
+      Targets:
+        - Arn: !GetAtt EC2AutoTagLambda.Arn
+          Id: "EC2TaggingLambdaTarget"
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EC2AutoTagLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EC2LaunchEventRule.Arn
