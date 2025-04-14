@@ -91,15 +91,15 @@ Resources:
       ServiceToken: !GetAtt AssignIpv6Function.Arn
       VpcId: !Ref CyberVpcId
       SubnetIds:
-        - !Ref TGWSubnetId1
-        - !Ref TGWSubnetId2
-        - !Ref ProxyNLBSubnetId1
-        - !Ref ProxyNLBSubnetId2
-        - !Ref ProxyPrivateSubnetId1
-        - !Ref ProxyPrivateSubnetId2
-        - !Ref MailRelayMgmtSubnetId1
-        - !Ref MailRelayMgmtSubnetId2
-        - !Ref MailRelayInternalSubnetId1
-        - !Ref MailRelayInternalSubnetId2
-        - !Ref MailRelayExternalSubnetId1
-        - !Ref MailRelayExternalSubnetId2
+      - !Ref TGWSubnetId1
+      - !Ref TGWSubnetId2
+      - !Ref ProxyNLBSubnetId1
+      - !Ref ProxyNLBSubnetId2
+      - !Ref ProxyPrivateSubnetId1
+      - !Ref ProxyPrivateSubnetId2
+      - !Ref MailRelayMgmtSubnetId1
+      - !Ref MailRelayMgmtSubnetId2
+      - !Ref MailRelayInternalSubnetId1
+      - !Ref MailRelayInternalSubnetId2
+      - !Ref MailRelayExternalSubnetId1
+      - !Ref MailRelayExternalSubnetId2
