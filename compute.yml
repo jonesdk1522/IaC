@@ -62,6 +62,8 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AutoScalingGroupName: ProxyASG
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
       VPCZoneIdentifier:
         - !Ref ProxyPrivateSubnetId1
         - !Ref ProxyPrivateSubnetId2
@@ -152,6 +154,8 @@ Resources:
     DependsOn: MailRelayLaunchTemplate
     Properties:
       AutoScalingGroupName: MailRelayASG
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
       VPCZoneIdentifier:
         - !Ref MailRelayMgmtSubnetId1
         - !Ref MailRelayMgmtSubnetId2
