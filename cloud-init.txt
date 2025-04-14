@@ -1,0 +1,35 @@
+UserData:
+  Fn::Base64: !Sub |
+    #cloud-config
+    users:
+      - default
+      - name: init-builder
+        gecos: SA FireCall Account
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        groups: localadmins
+        lock_passwd: true
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3... csircx00@vl2smtbcicansd1.lxcst.csirc.irs.gov
+
+    groups:
+      - localadmins: [root,init-builder]
+
+    network:
+      version: 1
+      config:
+        - type: physical
+          name: ens3
+          subnets:
+            - type: dhcp
+
+    runcmd:
+      - |
+        INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+        AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+        SHORT_AZ=${AZ: -2}
+        SHORT_ID=$(echo $INSTANCE_ID | cut -c -8)
+
+        /usr/bin/aws ec2 create-tags \
+          --region ${AWS::Region} \
+          --resources $INSTANCE_ID \
+          --tags Key=Name,Value="ec2-${SHORT_ID}" Key=AZ,Value="${SHORT_AZ}"
