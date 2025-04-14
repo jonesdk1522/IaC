@@ -1,41 +1,140 @@
-Code:
-  ZipFile:
-    Fn::Sub:
-      - |
-        const AWS = require("aws-sdk");
-        const ec2 = new AWS.EC2();
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Auto-tag EC2 instances from specific ASGs using lifecycle hooks
 
-        const allowedAsgs = ["${AllowedASGProxy}", "${AllowedASGMailRelay}"];
+Parameters:
+  ProxyASGName:
+    Type: String
+  MailRelayASGName:
+    Type: String
 
-        exports.handler = async (event) => {
-          const instanceId = event.detail?.EC2InstanceId;
-          const az = event.detail?.AvailabilityZone;
-          const asgName = event.detail?.AutoScalingGroupName;
+Resources:
 
-          if (!instanceId || !az || !asgName) {
-            console.warn("Missing required fields");
-            return;
-          }
+  LifecycleHookProxy:
+    Type: AWS::AutoScaling::LifecycleHook
+    Properties:
+      AutoScalingGroupName: !Ref ProxyASGName
+      LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+      LifecycleHookName: ProxyLaunchHook
+      HeartbeatTimeout: 300
+      DefaultResult: CONTINUE
 
-          if (!allowedAsgs.includes(asgName)) {
-            console.log("Not an allowed ASG:", asgName);
-            return;
-          }
+  LifecycleHookMailRelay:
+    Type: AWS::AutoScaling::LifecycleHook
+    Properties:
+      AutoScalingGroupName: !Ref MailRelayASGName
+      LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+      LifecycleHookName: MailRelayLaunchHook
+      HeartbeatTimeout: 300
+      DefaultResult: CONTINUE
 
-          const suffix = instanceId.slice(-8);
-          const shortAZ = az.slice(-2);
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EC2TagLifecycleLambdaRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowEC2TaggingAndLifecycle
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateTags
+                  - autoscaling:CompleteLifecycleAction
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
-          await ec2.createTags({
-            Resources: [instanceId],
-            Tags: [
-              { Key: "Name", Value: "ec2-" + suffix },     // ✅ No backticks
-              { Key: "AZ", Value: shortAZ }
-            ]
-          }).promise();
+  EC2TagLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ScopedEC2TaggerWithHooks
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 10
+      MemorySize: 128
+      Code:
+        ZipFile:
+          Fn::Sub:
+            - |
+              const AWS = require("aws-sdk");
+              const ec2 = new AWS.EC2();
+              const autoscaling = new AWS.AutoScaling();
 
-          console.log("Tagged instance:", instanceId);
-        };
-      - {
-          AllowedASGProxy: !Ref AllowedASGProxy,
-          AllowedASGMailRelay: !Ref AllowedASGMailRelay
-        }
+              const allowedAsgs = ["${ProxyASGName}", "${MailRelayASGName}"];
+
+              exports.handler = async (event) => {
+                const instanceId = event.detail?.EC2InstanceId;
+                const asgName = event.detail?.AutoScalingGroupName;
+                const hookName = event.detail?.LifecycleHookName;
+
+                if (!instanceId || !asgName || !hookName) {
+                  console.log("Missing required lifecycle data.");
+                  return;
+                }
+
+                if (!allowedAsgs.includes(asgName)) {
+                  console.log("Instance not from allowed ASG:", asgName);
+                  return;
+                }
+
+                const suffix = instanceId.slice(-8);
+
+                await ec2.createTags({
+                  Resources: [instanceId],
+                  Tags: [
+                    { Key: "Name", Value: "ec2-" + suffix },
+                    { Key: "ASG", Value: asgName }
+                  ]
+                }).promise();
+
+                await autoscaling.completeLifecycleAction({
+                  AutoScalingGroupName: asgName,
+                  LifecycleHookName: hookName,
+                  InstanceId: instanceId,
+                  LifecycleActionResult: "CONTINUE"
+                }).promise();
+
+                console.log("Tagged and continued instance:", instanceId);
+              };
+            - {
+                ProxyASGName: !Ref ProxyASGName,
+                MailRelayASGName: !Ref MailRelayASGName
+              }
+
+  EC2LifecycleEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: TagEC2FromSpecificASGs
+      Description: Trigger Lambda for lifecycle hooks from specific ASGs
+      EventPattern:
+        source:
+          - "aws.autoscaling"
+        detail-type:
+          - "EC2 Instance-launch Lifecycle Action"
+        detail:
+          AutoScalingGroupName:
+            - !Ref ProxyASGName
+            - !Ref MailRelayASGName
+      Targets:
+        - Arn: !GetAtt EC2TagLambda.Arn
+          Id: LambdaTargetForTagging
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EC2TagLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EC2LifecycleEventRule.Arn
