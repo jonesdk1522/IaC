@@ -291,7 +291,7 @@ Parameters:
 
   S3ObjectName:
     Type: String
-    Default: cloudformation/SkyHigh/assign-ipv6-custom-resource.zip
+    Default: cloudformation/SkyHigh/index.zip
 
 Mappings:
   RegionConfig:
@@ -342,6 +342,7 @@ Resources:
 
   LambdaIpv6AssignmentStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: NetworkingStack
     Properties:
       TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/lambda.yml
       Parameters:
@@ -352,12 +353,12 @@ Resources:
         ProxyNLBSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyNLBSubnetId2
         ProxyPrivateSubnetId1: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId1
         ProxyPrivateSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId2
-        MailRelayMgmtSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCId1
-        MailRelayMgmtSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetCId2
-        MailRelayInternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCId1
-        MailRelayInternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetCId2
-        MailRelayExternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCId1
-        MailRelayExternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetCId2
+        MailRelayMgmtSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetId1
+        MailRelayMgmtSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetId2
+        MailRelayInternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetId1
+        MailRelayInternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayInternalSubnetId2
+        MailRelayExternalSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetId1
+        MailRelayExternalSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayExternalSubnetId2
         LambdaCodeBucket: !Ref S3BucketName
         LambdaCodeKey: !Ref S3ObjectName
         EnvironmentName: !Ref EnvironmentName
@@ -366,6 +367,7 @@ Resources:
 
   SecurityStack: ## Good ##
     Type: AWS::CloudFormation::Stack
+    DependsOn: NetworkingStack
     Properties:
       TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/security.yml
       Parameters:
@@ -377,6 +379,7 @@ Resources:
 
   LoadBalancerStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: LambdaIpv6AssignmentStack
     Properties:
       TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/load-balancers.yml
       Parameters:
@@ -390,6 +393,7 @@ Resources:
 
   ComputeStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: NetworkingStack
     Properties:
       TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/compute.yml
       Parameters:
@@ -398,22 +402,26 @@ Resources:
         MailRelayAMI: !Ref MailRelayAMI
         ProxyInstanceType: !Ref ProxyInstanceType
         MailRelayInstanceType: !Ref MailRelayInstanceType
-        ProxyPrivateSubnetCIDR1: !Ref ProxyPrivateSubnetCIDR1
-        ProxyPrivateSubnetCIDR2: !Ref ProxyPrivateSubnetCIDR2
-        ProxySubnetV6CIDR1: !Ref ProxySubnetV6CIDR1
-        ProxySubnetV6CIDR2: !Ref ProxySubnetV6CIDR2
-        MailRelayMgmtSubnetCIDR1: !Ref MailRelayMgmtSubnetCIDR1
-        MailRelayMgmtSubnetCIDR2: !Ref MailRelayMgmtSubnetCIDR2
-        MailRelayInternalSubnetCIDR1: !Ref MailRelayInternalSubnetCIDR1
-        MailRelayInternalSubnetCIDR2: !Ref MailRelayInternalSubnetCIDR2
-        MailRelayExternalSubnetCIDR1: !Ref MailRelayExternalSubnetCIDR1
-        MailRelayExternalSubnetCIDR2: !Ref MailRelayExternalSubnetCIDR2
-        MailRelayMgmtSubnetV6CIDR1: !Ref MailRelayMgmtSubnetV6CIDR1
-        MailRelayMgmtSubnetV6CIDR2: !Ref MailRelayMgmtSubnetV6CIDR2
-        MailRelayInternalSubnetV6CIDR1: !Ref MailRelayInternalSubnetV6CIDR1
-        MailRelayInternalSubnetV6CIDR2: !Ref MailRelayInternalSubnetV6CIDR2
-        MailRelayExternalSubnetV6CIDR1: !Ref MailRelayExternalSubnetV6CIDR1
-        MailRelayExternalSubnetV6CIDR2: !Ref MailRelayExternalSubnetV6CIDR2
+        ProxyPrivateSubnetId1: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId1
+        ProxyPrivateSubnetId2: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetId2
+        MailRelayMgmtSubnetId1: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetId1
+        MailRelayMgmtSubnetId2: !GetAtt NetworkingStack.Outputs.MailRelayMgmtSubnetId2
+        # ProxyPrivateSubnetCIDR1: !Ref ProxyPrivateSubnetCIDR1
+        # ProxyPrivateSubnetCIDR2: !Ref ProxyPrivateSubnetCIDR2
+        # ProxySubnetV6CIDR1: !Ref ProxySubnetV6CIDR1
+        # ProxySubnetV6CIDR2: !Ref ProxySubnetV6CIDR2
+        # MailRelayMgmtSubnetCIDR1: !Ref MailRelayMgmtSubnetCIDR1
+        # MailRelayMgmtSubnetCIDR2: !Ref MailRelayMgmtSubnetCIDR2
+        # MailRelayInternalSubnetCIDR1: !Ref MailRelayInternalSubnetCIDR1
+        # MailRelayInternalSubnetCIDR2: !Ref MailRelayInternalSubnetCIDR2
+        # MailRelayExternalSubnetCIDR1: !Ref MailRelayExternalSubnetCIDR1
+        # MailRelayExternalSubnetCIDR2: !Ref MailRelayExternalSubnetCIDR2
+        # MailRelayMgmtSubnetV6CIDR1: !Ref MailRelayMgmtSubnetV6CIDR1
+        # MailRelayMgmtSubnetV6CIDR2: !Ref MailRelayMgmtSubnetV6CIDR2
+        # MailRelayInternalSubnetV6CIDR1: !Ref MailRelayInternalSubnetV6CIDR1
+        # MailRelayInternalSubnetV6CIDR2: !Ref MailRelayInternalSubnetV6CIDR2
+        # MailRelayExternalSubnetV6CIDR1: !Ref MailRelayExternalSubnetV6CIDR1
+        # MailRelayExternalSubnetV6CIDR2: !Ref MailRelayExternalSubnetV6CIDR2
         # ProxyPrivateSubnetCIDR1: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetCIDR1
         # ProxyPrivateSubnetCIDR2: !GetAtt NetworkingStack.Outputs.ProxyPrivateSubnetCIDR2
         # ProxySubnetV6CIDR1: !GetAtt NetworkingStack.Outputs.ProxySubnetV6CIDR1
