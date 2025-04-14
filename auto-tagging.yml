@@ -1,52 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Auto-tag EC2 instances only from specific Auto Scaling Groups
-
-Parameters:
-  AllowedASGs:
-    Type: CommaDelimitedList
-    Default: MyApp-ASG-Prod,MyApp-ASG-Dev
-    Description: ASG names allowed to trigger instance tagging
-
-Resources:
-
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: EC2ScopedAutoTagLambdaRole
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: EC2TaggingAndLogs
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:CreateTags
-                  - ec2:DescribeInstances
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-
-  EC2ScopedAutoTagLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: ScopedEC2AutoTagger
-      Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: nodejs18.x
-      Timeout: 10
-      MemorySize: 128
-      Code:
+Code:
   ZipFile:
     Fn::Sub:
       - |
@@ -66,7 +18,7 @@ Resources:
           }
 
           if (!allowedAsgs.includes(asgName)) {
-            console.log(`Skipping instance from ASG ${asgName}`);
+            console.log("Not an allowed ASG:", asgName);
             return;
           }
 
@@ -87,27 +39,3 @@ Resources:
           ASG1: !Ref AllowedASG1,
           ASG2: !Ref AllowedASG2
         }
-
-  EC2ASGLaunchRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: ScopedEC2TaggerRule
-      Description: Trigger Lambda only for specific ASGs
-      EventPattern:
-        source:
-          - "aws.autoscaling"
-        detail-type:
-          - "EC2 Instance-launch Lifecycle Action"
-        detail:
-          AutoScalingGroupName: !Ref AllowedASGs
-      Targets:
-        - Arn: !GetAtt EC2ScopedAutoTagLambda.Arn
-          Id: ScopedEC2TaggerTarget
-
-  LambdaPermissionForEventBridge:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref EC2ScopedAutoTagLambda
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt EC2ASGLaunchRule.Arn
