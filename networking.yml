@@ -533,30 +533,30 @@ Outputs:
       Name: !Sub '${ProjectName}-${EnvironmentName}-ProxyPrivateSubnetCIDR2'
 
 # Mail Relay Subnet ID Exports
-  MailRelayMgmtSubnetCId1:
+  MailRelayMgmtSubnetId1:
     Value: !GetAtt EPZMailRelayMgmtSubnetCIDR1.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayMgmtSubnetCIDR1'
-  MailRelayMgmtSubnetCId2:
+  MailRelayMgmtSubnetId2:
     Value: !GetAtt EPZMailRelayMgmtSubnetCIDR2.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayMgmtSubnetCIDR2'
 
-  MailRelayInternalSubnetCId1:
-    Value: !GetAtt EPZMailRelayExternalSubnetCIDR1.SubnetId
+  MailRelayInternalSubnetId1:
+    Value: !GetAtt EPZMailRelayInternalSubnetCIDR1.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayInternalSubnetCIDR1'
-  MailRelayInternalSubnetCId2:
+  MailRelayInternalSubnetId2:
     Value: !GetAtt EPZMailRelayInternalSubnetCIDR2.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayInternalSubnetCIDR2'
 
-  MailRelayExternalSubnetCId1:
+  MailRelayExternalSubnetId1:
     Value: !GetAtt EPZMailRelayExternalSubnetCIDR1.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayExternalSubnetCIDR1'
-  MailRelayExternalSubnetCId2:
-    Value: !GetAtt EPZMailRelayInternalSubnetCIDR2.SubnetId
+  MailRelayExternalSubnetId2:
+    Value: !GetAtt EPZMailRelayExternalSubnetCIDR2.SubnetId
     Export:
       Name: !Sub '${ProjectName}-${EnvironmentName}-MailRelayExternalSubnetCIDR2'
 
