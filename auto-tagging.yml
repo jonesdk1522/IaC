@@ -47,46 +47,46 @@ Resources:
       Timeout: 10
       MemorySize: 128
       Code:
-        ZipFile: !Sub |
-          const AWS = require("aws-sdk");
-          const ec2 = new AWS.EC2();
+  ZipFile:
+    Fn::Sub:
+      - |
+        const AWS = require("aws-sdk");
+        const ec2 = new AWS.EC2();
 
-          const allowedAsgs = [${AllowedASGs.map(asg => `"${asg}"`).join(",")}];
+        const allowedAsgs = ["${ASG1}", "${ASG2}"];
 
-          exports.handler = async (event) => {
-            console.log("Received event:", JSON.stringify(event, null, 2));
+        exports.handler = async (event) => {
+          const instanceId = event.detail?.EC2InstanceId;
+          const az = event.detail?.AvailabilityZone;
+          const asgName = event.detail?.AutoScalingGroupName;
 
-            const instanceId = event.detail?.EC2InstanceId;
-            const az = event.detail?.AvailabilityZone;
-            const asgName = event.detail?.AutoScalingGroupName;
+          if (!instanceId || !az || !asgName) {
+            console.warn("Missing required fields");
+            return;
+          }
 
-            if (!instanceId || !az || !asgName) {
-              console.warn("Missing one of instanceId, AZ, or ASG Name. Skipping.");
-              return;
-            }
+          if (!allowedAsgs.includes(asgName)) {
+            console.log(`Skipping instance from ASG ${asgName}`);
+            return;
+          }
 
-            if (!allowedAsgs.includes(asgName)) {
-              console.log(`ASG ${asgName} is not in the allowed list. Skipping.`);
-              return;
-            }
+          const suffix = instanceId.slice(-8);
+          const shortAZ = az.slice(-2);
 
-            const suffix = instanceId.slice(-8);
-            const shortAZ = az.slice(-2);
+          await ec2.createTags({
+            Resources: [instanceId],
+            Tags: [
+              { Key: "Name", Value: `ec2-${suffix}` },
+              { Key: "AZ", Value: shortAZ }
+            ]
+          }).promise();
 
-            try {
-              await ec2.createTags({
-                Resources: [instanceId],
-                Tags: [
-                  { Key: "Name", Value: `ec2-${suffix}` },
-                  { Key: "AZ", Value: shortAZ }
-                ]
-              }).promise();
-
-              console.log(`Tagged ${instanceId} from ASG ${asgName}`);
-            } catch (err) {
-              console.error("Tagging failed:", err);
-            }
-          };
+          console.log(`Tagged instance ${instanceId}`);
+        };
+      - {
+          ASG1: !Ref AllowedASG1,
+          ASG2: !Ref AllowedASG2
+        }
 
   EC2ASGLaunchRule:
     Type: AWS::Events::Rule
