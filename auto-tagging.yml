@@ -1,51 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: Auto-tag EC2 instances only from specific Auto Scaling Groups
-
-Parameters:
-  AllowedASGProxy:
-    Type: String
-  AllowedASGMailRelay:
-    Type: String
-
-Resources:
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: EC2ScopedAutoTagLambdaRole
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: EC2TaggingAndLogs
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:CreateTags
-                  - ec2:DescribeInstances
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
-
-  EC2ScopedAutoTagLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: ScopedEC2AutoTagger
-      Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: nodejs18.x
-      Timeout: 10
-      MemorySize: 128
-    Code:
+Code:
   ZipFile:
     Fn::Sub:
       - |
@@ -75,41 +28,14 @@ Resources:
           await ec2.createTags({
             Resources: [instanceId],
             Tags: [
-              { Key: "Name", Value: `ec2-$${suffix}` },     // ✅ Escaped
+              { Key: "Name", Value: "ec2-" + suffix },     // ✅ No backticks
               { Key: "AZ", Value: shortAZ }
             ]
           }).promise();
 
-          console.log(`Tagged instance $${instanceId}`);
+          console.log("Tagged instance:", instanceId);
         };
       - {
           AllowedASGProxy: !Ref AllowedASGProxy,
           AllowedASGMailRelay: !Ref AllowedASGMailRelay
         }
-
-
-  EC2ASGLaunchRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: ScopedEC2TaggerRule
-      Description: Trigger Lambda only for specific ASGs
-      EventPattern:
-        source:
-          - "aws.autoscaling"
-        detail-type:
-          - "EC2 Instance-launch Lifecycle Action"
-        detail:
-          AutoScalingGroupName:
-            - !Ref AllowedASGProxy
-            - !Ref AllowedASGMailRelay
-      Targets:
-        - Arn: !GetAtt EC2ScopedAutoTagLambda.Arn
-          Id: ScopedEC2TaggerTarget
-
-  LambdaPermissionForEventBridge:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref EC2ScopedAutoTagLambda
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt EC2ASGLaunchRule.Arn
