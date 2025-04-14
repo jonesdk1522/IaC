@@ -1,5 +1,26 @@
 UserData:
   Fn::Base64: !Sub |
+    #!/bin/bash
+    echo "Running tag assignment..." >> /var/log/user-data.log
+
+    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+    AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    SHORT_AZ=$(echo "$${AZ}" | rev | cut -c1-2 | rev)
+    SUFFIX=$(echo "$${INSTANCE_ID}" | cut -c -8)
+
+    echo "AZ=$${AZ}" >> /var/log/user-data.log
+    echo "SHORT_AZ=$${SHORT_AZ}" >> /var/log/user-data.log
+    echo "INSTANCE_ID=$${INSTANCE_ID}" >> /var/log/user-data.log
+    echo "SUFFIX=$${SUFFIX}" >> /var/log/user-data.log
+
+    /usr/bin/aws ec2 create-tags \
+      --region ${AWS::Region} \
+      --resources "$${INSTANCE_ID}" \
+      --tags Key=Name,Value="ec2-$${SUFFIX}" Key=AZ,Value="$${SHORT_AZ}" >> /var/log/user-data.log 2>&1
+
+
+UserData:
+  Fn::Base64: !Sub |
     #cloud-config
     users:
       - default
@@ -27,33 +48,15 @@ UserData:
         echo "Running tag assignment..." >> /var/log/user-data.log
         INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
         AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-        SHORT_AZ=$(echo "$AZ" | rev | cut -c1-2 | rev)
-        SUFFIX=$(echo "$INSTANCE_ID" | cut -c -8)
+        SHORT_AZ=$(echo "$${AZ}" | rev | cut -c1-2 | rev)
+        SUFFIX=$(echo "$${INSTANCE_ID}" | cut -c -8)
+
+        echo "AZ=$${AZ}" >> /var/log/user-data.log
+        echo "SHORT_AZ=$${SHORT_AZ}" >> /var/log/user-data.log
+        echo "INSTANCE_ID=$${INSTANCE_ID}" >> /var/log/user-data.log
+        echo "SUFFIX=$${SUFFIX}" >> /var/log/user-data.log
 
         /usr/bin/aws ec2 create-tags \
           --region ${AWS::Region} \
           --resources "$${INSTANCE_ID}" \
           --tags Key=Name,Value="ec2-$${SUFFIX}" Key=AZ,Value="$${SHORT_AZ}" >> /var/log/user-data.log 2>&1
-
-
-
-UserData:
-  Fn::Base64: !Sub |
-    #!/bin/bash
-    echo "Running tag assignment..." >> /var/log/user-data.log
-
-    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
-    SHORT_AZ=$(echo "$AZ" | rev | cut -c1-2 | rev)
-    SUFFIX=$(echo "$INSTANCE_ID" | cut -c -8)
-
-    echo "AZ=$AZ" >> /var/log/user-data.log
-    echo "SHORT_AZ=$SHORT_AZ" >> /var/log/user-data.log
-    echo "INSTANCE_ID=$INSTANCE_ID" >> /var/log/user-data.log
-    echo "SUFFIX=$SUFFIX" >> /var/log/user-data.log
-
-    /usr/bin/aws ec2 create-tags \
-      --region ${AWS::Region} \
-      --resources "$${INSTANCE_ID}" \
-      --tags Key=Name,Value="ec2-$${SUFFIX}" Key=AZ,Value="$${SHORT_AZ}" >> /var/log/user-data.log 2>&1
-
