@@ -23,7 +23,6 @@ Parameters:
     - m4.2xlarge
     - m5.2xlarge
     Default: m5.2xlarge
-    Description: Instance type for Proxy servers
   MailRelayInstanceType:
     Type: String
     AllowedValues:
@@ -33,8 +32,6 @@ Parameters:
     - c4.4xlarge
     - c5a.4xlarge
     Default: c5a.4xlarge
-    Description: Instance type for Mail Rely servers
-
   ProxyTargetGroupARN:
     Type: String
   MailRelayTargetGroupARN:
@@ -43,23 +40,23 @@ Parameters:
     Type: String
   MailRelaySecurityGroup:
     Type: String
-
-  # Proxy parameters
-  # V4 Subnets
   ProxyPrivateSubnetId1:
     Type: String
   ProxyPrivateSubnetId2:
     Type: String
-
-  # Mail Relay parameters
   MailRelayMgmtSubnetId1:
     Type: String
   MailRelayMgmtSubnetId2:
+    Type: String
+  LambdaCodeBucket:
+    Type: String
+  LambdaAutoTagCodeKey:
     Type: String
 
 Resources:
   ProxyASG:
     Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: EC2LifecycleEventRule
     Properties:
       AutoScalingGroupName: ProxyASG
       HealthCheckType: EC2
@@ -67,6 +64,11 @@ Resources:
       VPCZoneIdentifier:
         - !Ref ProxyPrivateSubnetId1
         - !Ref ProxyPrivateSubnetId2
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+          LifecycleHookName: ProxyLaunchHook
+          DefaultResult: CONTINUE
+          HeartbeatTimeout: 300
       LaunchTemplate:
         LaunchTemplateId: !Ref ProxyLaunchTemplate
         Version: !GetAtt ProxyLaunchTemplate.LatestVersionNumber
@@ -141,6 +143,7 @@ Resources:
                   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2hIJDwBDtF33+B0+Jnmel/lgF3+5V19GNzfIOnzI/TBpkhlEd3Gc/qjwpNmEF8WmGI52pOxGY/ZdB01EUXxS7SLbbXGgNoNlQzio3jUD0G/s2FGoh9OV9q9+AEGVr1ddqx9Or5Cm1qyvsH4KPPlWH3MB3C9++3OSp56DnEitf/P9QH6sFvkAPWPGwjWDiqfJPsfnklTW+LmKhbApfDGrBHhW5FA5YNmPqZXtpb79XWju/9V4GWzce6QLXk8DCzBFwTA3VvU/fj6KCAPIN/KpwEKDlE0B6D6PX0nKQ4k0hJr5QGnoVi90JRayaL+VdKDFwwHi4JrrhFBueZrLBAzDD csircx00@vl2smtbcicansd1.lxcst.csirc.irs.gov
             groups:
               - localadmins: [root,init-builder]
+
             network:
               version: 1
               config:
@@ -151,7 +154,7 @@ Resources:
 
   MailRelayASG:
     Type: AWS::AutoScaling::AutoScalingGroup
-    DependsOn: MailRelayLaunchTemplate
+    DependsOn: EC2LifecycleEventRule
     Properties:
       AutoScalingGroupName: MailRelayASG
       HealthCheckType: EC2
@@ -159,6 +162,11 @@ Resources:
       VPCZoneIdentifier:
         - !Ref MailRelayMgmtSubnetId1
         - !Ref MailRelayMgmtSubnetId2
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+          LifecycleHookName: MailRelayLaunchHook
+          DefaultResult: CONTINUE
+          HeartbeatTimeout: 300
       LaunchTemplate:
         LaunchTemplateId: !Ref MailRelayLaunchTemplate
         Version: !GetAtt MailRelayLaunchTemplate.LatestVersionNumber
@@ -220,6 +228,75 @@ Resources:
           - Key: Department
             Value: !Ref Department
 
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EC2ScopedAutoTagLambdaRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowEC2TaggingAndLifecycle
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateTags
+                  - ec2:DescribeInstances
+                  - autoscaling:CompleteLifecycleAction
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  EC2ScopedAutoTagLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ScopedEC2TaggerWithHooks
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: nodejs18.x
+      Timeout: 10
+      MemorySize: 128
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaAutoTagCodeKey
+
+  EC2LifecycleEventRule:
+    Type: AWS::Events::Rule
+    DependsOn: EC2ScopedAutoTagLambda
+    Properties:
+      Name: TagEC2FromSpecificASGs
+      Description: Trigger Lambda for lifecycle hooks from specific ASGs
+      EventPattern:
+        source:
+          - "aws.autoscaling"
+        detail-type:
+          - "EC2 Instance-launch Lifecycle Action"
+        detail:
+          AutoScalingGroupName:
+            - ProxyASG
+            - MailRelayASG
+      Targets:
+        - Arn: !GetAtt EC2ScopedAutoTagLambda.Arn
+          Id: LambdaTargetForTagging
+
+  LambdaPermissionForEventBridge:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref EC2ScopedAutoTagLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EC2LifecycleEventRule.Arn
+
 Outputs:
   ProxyAutoScalingGroupName:
     Description: Name of Proxy ASG
@@ -231,8 +308,3 @@ Outputs:
     Value: !Ref MailRelayASG
     Export:
       Name: !Sub "${AWS::StackName}-MailRelayASGName"
-  # MailRelayDesiredCapacity:
-  #   Description: Desired capacity of Mail Relay ASG
-  #   Value: !GetAtt MailRelayASG.DesiredCapacity
-  #   Export:
-  #     Name: !Sub "${AWS::StackName}-MailRelayDesiredCapacity"
