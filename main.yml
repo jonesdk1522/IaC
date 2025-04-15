@@ -80,6 +80,7 @@ Metadata:
       Parameters:
       - S3BucketName
       - S3ObjectName
+      - S3ObjectNameAutoTag
 
 Parameters:
   EnvironmentName:
@@ -293,6 +294,10 @@ Parameters:
     Type: String
     Default: cloudformation/SkyHigh/index.zip
 
+  S3ObjectNameAutoTag:
+    Type: String
+    Default: cloudformation/SkyHigh/autotag/index.zip
+
 Mappings:
   RegionConfig:
     us-gov-west-1:
@@ -365,7 +370,7 @@ Resources:
         ProjectName: !Ref ProjectName
         Department: !Ref Department
 
-  SecurityStack: ## Good ##
+  SecurityStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: NetworkingStack
     Properties:
@@ -442,6 +447,19 @@ Resources:
         MailRelayTargetGroupARN: !GetAtt LoadBalancerStack.Outputs.MailRelayTargetGroup
         ProxySecurityGroup: !GetAtt SecurityStack.Outputs.ProxySecurityGroup
         MailRelaySecurityGroup: !GetAtt SecurityStack.Outputs.MailRelaySecurityGroup
+        LambdaCodeBucket: !Ref S3BucketName
+        LambdaAutoTagCodeKey: !Ref S3ObjectNameAutoTag
         EnvironmentName: !Ref EnvironmentName
         ProjectName: !Ref ProjectName
         Department: !Ref Department
+
+  # LambdaAutoTagStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn: ComputeStack
+  #   Properties:
+  #     TemplateURL: !Sub https://${S3BucketName}.s3.${Region}.amazonaws.com/cloudformation/SkyHigh/lambda-autotag.yml
+  #     Parameters:
+  #       AllowedASGProxy: !GetAtt ComputeStack.Outputs.ProxyAutoScalingGroupName
+  #       AllowedASGMailRelay: !GetAtt ComputeStack.Outputs.MailRelayAutoScalingGroupName
+  #       LambdaCodeBucket: !Ref S3BucketName
+  #       LambdaAutoTagCodeKey: !Ref S3ObjectNameAutoTag
