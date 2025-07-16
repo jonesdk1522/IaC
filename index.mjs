@@ -1,7 +1,9 @@
-import AWS from 'aws-sdk';
-import https from 'https';
-import fs from 'fs';
-import zlib from 'zlib';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const AWS = require('aws-sdk');
+const https = require('https');
+const fs = require('fs');
+const zlib = require('zlib');
 import { URL } from 'url';
 
 const s3 = new AWS.S3();
