@@ -1,10 +1,8 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 const AWS = require('aws-sdk');
 const https = require('https');
 const fs = require('fs');
 const zlib = require('zlib');
-import { URL } from 'url';
+const { URL } = require('url');
 
 const s3 = new AWS.S3();
 
@@ -20,7 +18,7 @@ https.globalAgent.options.ca = ca;
 
 const BATCH_SIZE = 50;
 
-export const handler = async (event) => {
+const handler = async (event) => {
     const results = await Promise.all(event.Records.map(async (record) => {
         const bucket = record.s3.bucket.name;
         const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
@@ -91,7 +89,6 @@ export const handler = async (event) => {
                 });
 
                 req.on('timeout', () => {
-                    req.destroy();
                     console.error('Request to Splunk timed out');
                     resolve({ result: 'Timeout' });
                 });
@@ -111,3 +108,5 @@ export const handler = async (event) => {
 
     return { results };
 };
+
+module.exports = { handler };
