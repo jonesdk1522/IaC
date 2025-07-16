@@ -1,8 +1,10 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 const AWS = require('aws-sdk');
 const https = require('https');
 const fs = require('fs');
 const zlib = require('zlib');
-const { URL } = require('url');
+import { URL } from 'url';
 
 const s3 = new AWS.S3();
 
@@ -18,7 +20,7 @@ https.globalAgent.options.ca = ca;
 
 const BATCH_SIZE = 50;
 
-const handler = async (event) => {
+export const handler = async (event) => {
     const results = await Promise.all(event.Records.map(async (record) => {
         const bucket = record.s3.bucket.name;
         const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
@@ -107,6 +109,4 @@ const handler = async (event) => {
     }));
 
     return { results };
-};
-
-module.exports = { handler };
+}; 
