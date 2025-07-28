@@ -6,7 +6,7 @@ Parameters:
   CloudTrailLogGroupName:
     Type: String
     Description: Name of the CloudTrail CloudWatch Log Group
-    Default: !Ref CloudTrailLogGroup
+    Default: /aws/cloudtrail/cis-benchmark
   AlarmEmail:
     Type: String
     Description: Email address to receive CIS Benchmark alerts
@@ -16,7 +16,7 @@ Resources:
   CloudTrailLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /aws/cloudtrail/cis-benchmark
+      LogGroupName: !Ref CloudTrailLogGroupName
       RetentionInDays: 90
 
   # SNS Topic and Subscription for Alarms
@@ -35,6 +35,7 @@ Resources:
   # CIS 3.1: Unauthorized API calls
   UnauthorizedAPICallsMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.errorCode="*UnauthorizedOperation") || ($.errorCode="AccessDenied*")}'
@@ -60,6 +61,7 @@ Resources:
   # CIS 3.2: Console logins without MFA
   ConsoleLoginWithoutMFAMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventName="ConsoleLogin") && ($.additionalEventData.MFAUsed!="Yes") && ($.responseElements.ConsoleLogin="Success")}'
@@ -85,6 +87,7 @@ Resources:
   # CIS 3.3: Root account usage
   RootAccountUsageMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.userIdentity.type="Root") && ($.userIdentity.invokedBy NOT EXISTS) && ($.eventType!="AwsServiceEvent")}'
@@ -110,6 +113,7 @@ Resources:
   # CIS 3.4: IAM policy changes
   IAMPolicyChangesMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventName=DeleteGroupPolicy) || ($.eventName=DeleteRolePolicy) || ($.eventName=DeleteUserPolicy) || ($.eventName=PutGroupPolicy) || ($.eventName=PutRolePolicy) || ($.eventName=PutUserPolicy) || ($.eventName=CreatePolicy) || ($.eventName=DeletePolicy) || ($.eventName=CreatePolicyVersion) || ($.eventName=DeletePolicyVersion) || ($.eventName=AttachRolePolicy) || ($.eventName=DetachRolePolicy) || ($.eventName=AttachUserPolicy) || ($.eventName=DetachUserPolicy) || ($.eventName=AttachGroupPolicy) || ($.eventName=DetachGroupPolicy)}'
@@ -135,6 +139,7 @@ Resources:
   # CIS 3.5: CloudTrail configuration changes
   CloudTrailConfigChangesMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventName=CreateTrail) || ($.eventName=UpdateTrail) || ($.eventName=DeleteTrail) || ($.eventName=StartLogging) || ($.eventName=StopLogging)}'
@@ -160,6 +165,7 @@ Resources:
   # CIS 3.6: AWS Management Console authentication failures
   ConsoleAuthenticationFailureMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventName="ConsoleLogin") && ($.errorMessage="Failed authentication")}'
@@ -185,6 +191,7 @@ Resources:
   # CIS 3.7: Disabling or scheduled deletion of CMKs
   CMKChangesMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventSource=kms.amazonaws.com) && (($.eventName=DisableKey) || ($.eventName=ScheduleKeyDeletion))}'
@@ -210,6 +217,7 @@ Resources:
   # CIS 3.8: S3 bucket policy changes
   S3BucketPolicyChangesMetricFilter:
     Type: AWS::Logs::MetricFilter
+    DependsOn: CloudTrailLogGroup
     Properties:
       LogGroupName: !Ref CloudTrailLogGroupName
       FilterPattern: '{($.eventSource=s3.amazonaws.com) && (($.eventName=PutBucketAcl) || ($.eventName=PutBucketPolicy) || ($.eventName=PutBucketCors) || ($.eventName=PutBucketLifecycle) || ($.eventName=PutBucketReplication) || ($.eventName=DeleteBucketPolicy) || ($.eventName=DeleteBucketCors) || ($.eventName=DeleteBucketLifecycle) || ($.eventName=DeleteBucketReplication))}'
