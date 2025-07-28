@@ -1,0 +1,241 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  CloudFormation template to create CloudWatch metric filters and alarms for AWS CIS Benchmark controls, including log group creation and SNS alerting.
+
+Parameters:
+  CloudTrailLogGroupName:
+    Type: String
+    Description: Name of the CloudTrail CloudWatch Log Group
+    Default: !Ref CloudTrailLogGroup
+  AlarmEmail:
+    Type: String
+    Description: Email address to receive CIS Benchmark alerts
+
+Resources:
+  # Create the CloudTrail Log Group
+  CloudTrailLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/cloudtrail/cis-benchmark
+      RetentionInDays: 90
+
+  # SNS Topic and Subscription for Alarms
+  CISAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: CIS Benchmark CloudWatch Alarms
+
+  CISAlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlarmEmail
+      TopicArn: !Ref CISAlarmTopic
+
+  # CIS 3.1: Unauthorized API calls
+  UnauthorizedAPICallsMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.errorCode="*UnauthorizedOperation") || ($.errorCode="AccessDenied*")}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "UnauthorizedAPICalls"
+
+  UnauthorizedAPICallsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.1: Unauthorized API calls detected"
+      Namespace: "CISBenchmark"
+      MetricName: "UnauthorizedAPICalls"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.2: Console logins without MFA
+  ConsoleLoginWithoutMFAMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventName="ConsoleLogin") && ($.additionalEventData.MFAUsed!="Yes") && ($.responseElements.ConsoleLogin="Success")}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "ConsoleLoginWithoutMFA"
+
+  ConsoleLoginWithoutMFAAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.2: Console login without MFA detected"
+      Namespace: "CISBenchmark"
+      MetricName: "ConsoleLoginWithoutMFA"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.3: Root account usage
+  RootAccountUsageMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.userIdentity.type="Root") && ($.userIdentity.invokedBy NOT EXISTS) && ($.eventType!="AwsServiceEvent")}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "RootAccountUsage"
+
+  RootAccountUsageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.3: Root account usage detected"
+      Namespace: "CISBenchmark"
+      MetricName: "RootAccountUsage"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.4: IAM policy changes
+  IAMPolicyChangesMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventName=DeleteGroupPolicy) || ($.eventName=DeleteRolePolicy) || ($.eventName=DeleteUserPolicy) || ($.eventName=PutGroupPolicy) || ($.eventName=PutRolePolicy) || ($.eventName=PutUserPolicy) || ($.eventName=CreatePolicy) || ($.eventName=DeletePolicy) || ($.eventName=CreatePolicyVersion) || ($.eventName=DeletePolicyVersion) || ($.eventName=AttachRolePolicy) || ($.eventName=DetachRolePolicy) || ($.eventName=AttachUserPolicy) || ($.eventName=DetachUserPolicy) || ($.eventName=AttachGroupPolicy) || ($.eventName=DetachGroupPolicy)}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "IAMPolicyChanges"
+
+  IAMPolicyChangesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.4: IAM policy changes detected"
+      Namespace: "CISBenchmark"
+      MetricName: "IAMPolicyChanges"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.5: CloudTrail configuration changes
+  CloudTrailConfigChangesMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventName=CreateTrail) || ($.eventName=UpdateTrail) || ($.eventName=DeleteTrail) || ($.eventName=StartLogging) || ($.eventName=StopLogging)}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "CloudTrailConfigChanges"
+
+  CloudTrailConfigChangesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.5: CloudTrail configuration changes detected"
+      Namespace: "CISBenchmark"
+      MetricName: "CloudTrailConfigChanges"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.6: AWS Management Console authentication failures
+  ConsoleAuthenticationFailureMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventName="ConsoleLogin") && ($.errorMessage="Failed authentication")}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "ConsoleAuthenticationFailure"
+
+  ConsoleAuthenticationFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.6: Console authentication failure detected"
+      Namespace: "CISBenchmark"
+      MetricName: "ConsoleAuthenticationFailure"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.7: Disabling or scheduled deletion of CMKs
+  CMKChangesMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventSource=kms.amazonaws.com) && (($.eventName=DisableKey) || ($.eventName=ScheduleKeyDeletion))}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "CMKChanges"
+
+  CMKChangesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.7: CMK disable or scheduled deletion detected"
+      Namespace: "CISBenchmark"
+      MetricName: "CMKChanges"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+  # CIS 3.8: S3 bucket policy changes
+  S3BucketPolicyChangesMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref CloudTrailLogGroupName
+      FilterPattern: '{($.eventSource=s3.amazonaws.com) && (($.eventName=PutBucketAcl) || ($.eventName=PutBucketPolicy) || ($.eventName=PutBucketCors) || ($.eventName=PutBucketLifecycle) || ($.eventName=PutBucketReplication) || ($.eventName=DeleteBucketPolicy) || ($.eventName=DeleteBucketCors) || ($.eventName=DeleteBucketLifecycle) || ($.eventName=DeleteBucketReplication))}'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: "CISBenchmark"
+          MetricName: "S3BucketPolicyChanges"
+
+  S3BucketPolicyChangesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "CIS 3.8: S3 bucket policy changes detected"
+      Namespace: "CISBenchmark"
+      MetricName: "S3BucketPolicyChanges"
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref CISAlarmTopic
+
+Outputs:
+  CISBenchmarkMetricNamespace:
+    Description: "Namespace for CIS Benchmark CloudWatch Metrics"
+    Value: "CISBenchmark"
+  CISAlarmTopicArn:
+    Description: "SNS Topic ARN for CIS Benchmark CloudWatch Alarms"
+    Value: !Ref CISAlarmTopic
